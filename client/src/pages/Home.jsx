@@ -8,149 +8,49 @@ export default function Home() {
   return (
     <div className="home-page">
       {/* HERO SECTION */}
-      <section className="hero-section hero-new-style" id="home">
-        <div className="hero-bg-overlay"></div>
+      <section className="hero-section hero-redesign" id="home">
+        {/* Full Single Background Image */}
+        <div className="hero-bg-photo-container">
+          <img 
+            src="/images/home-hero-bg.png" 
+            alt="Netcradus Academia Campus & Students" 
+            className="hero-bg-photo" 
+          />
+        </div>
+
         <div className="container hero-container">
-          {/* Hero Left Content */}
-          <div className="hero-content">
-            <div className="badge-pill pill-cyan">
+          {/* Empty Left Space reserved for Campus & Students background visual */}
+          <div className="hero-left-spacer"></div>
+
+          {/* Hero Right Content (Positioned in intentional empty right area) */}
+          <div className="hero-content hero-right-content">
+            <div className="badge-pill pill-orange">
               <i className="fa-solid fa-graduation-cap"></i>
               <span>EMPOWERING FUTURES</span>
             </div>
 
             <h1 className="hero-title hero-title-large">
-              Learn. Build. <br />
-              <span className="highlight-blue-gradient">Succeed.</span>
+              <span className="hero-title-nowrap">Learn. Build.</span><br />
+              <span className="highlight-orange-gradient">Succeed.</span>
             </h1>
 
             <p className="hero-subtitle hero-subtitle-new">
-              Netcradus Academia is your pathway to in-demand skills, real-world projects, and industry-recognized
-              certifications that accelerate your career.
+              Netcradus Academia is your pathway to in-demand skills, real-world projects, and industry-recognized certifications that accelerate your career.
             </p>
 
             <div className="hero-buttons">
-              <Link to="/dashboard" className="btn btn-blue-glow">
-                Explore Dashboard <i className="fa-solid fa-arrow-right-long"></i>
+              <Link to="/dashboard" className="btn btn-orange-glow">
+                EXPLORE DASHBOARD <i className="fa-solid fa-arrow-right-long"></i>
               </Link>
-              <Link to="/about" className="btn btn-outline-play">
-                About Us <i className="fa-solid fa-play"></i>
+              <Link to="/about" className="btn btn-outline-orange">
+                ABOUT US <i className="fa-solid fa-caret-right"></i>
               </Link>
-            </div>
-          </div>
-
-          {/* Hero Right Circular Courses Graphic */}
-          <div className="hero-visual">
-            <div className="cyber-orbit-hero">
-              <div className="orbit-glow-bg"></div>
-              <div className="orbit-ring orbit-ring-outer"></div>
-              <div className="orbit-ring orbit-ring-inner"></div>
-              <div className="orbit-radar-sweep"></div>
-
-              {/* Central Hub */}
-              <div className="orbit-center-hub">
-                <h2 className="hub-title">
-                  WELCOME TO <br />
-                  <span className="highlight-blue-gradient">NETCRADUS ACADEMIA</span>
-                </h2>
-                <p className="hub-subtitle">Cyber Security & AI Excellence</p>
-              </div>
-
-              {/* Automated Circular Orbit Track with Courses */}
-              <div className="orbit-spinning-track">
-                {/* Node 1 */}
-                <div className="orbit-node node-pos-0" onClick={() => openEnrollModalFor('Ethical Hacking & VAPT')}>
-                  <div className="node-card cyber-node">
-                    <div className="node-icon"><i className="fa-solid fa-user-secret"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">CYBER SECURITY</span>
-                      <h4 className="node-name">Ethical Hacking & VAPT</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 2 */}
-                <div className="orbit-node node-pos-45" onClick={() => openEnrollModalFor('SOC Analyst & Network Defense')}>
-                  <div className="node-card soc-node">
-                    <div className="node-icon"><i className="fa-solid fa-shield-virus"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">DEFENSE</span>
-                      <h4 className="node-name">SOC Analyst & Defense</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 3 */}
-                <div className="orbit-node node-pos-90" onClick={() => openEnrollModalFor('AI & Machine Learning With Generative AI')}>
-                  <div className="node-card ai-node">
-                    <div className="node-icon"><i className="fa-solid fa-brain"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">AI & ML</span>
-                      <h4 className="node-name">AI & Generative AI</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 4 */}
-                <div className="orbit-node node-pos-135" onClick={() => openEnrollModalFor('AWS, Azure & Google Cloud Architecture')}>
-                  <div className="node-card cloud-node">
-                    <div className="node-icon"><i className="fa-solid fa-cloud-arrow-up"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">CLOUD</span>
-                      <h4 className="node-name">AWS & Cloud Security</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 5 */}
-                <div className="orbit-node node-pos-180" onClick={() => openEnrollModalFor('Ethical Hacking & VAPT')}>
-                  <div className="node-card net-node">
-                    <div className="node-icon"><i className="fa-solid fa-lock"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">VAPT AUDIT</span>
-                      <h4 className="node-name">Network VAPT Audit</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 6 */}
-                <div className="orbit-node node-pos-225" onClick={() => openEnrollModalFor('Data Analytics & Visualization')}>
-                  <div className="node-card data-node">
-                    <div className="node-icon"><i className="fa-solid fa-chart-line"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">DATA SCIENCE</span>
-                      <h4 className="node-name">Data Analytics & BI</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 7 */}
-                <div className="orbit-node node-pos-270" onClick={() => openEnrollModalFor('MERN Stack Development')}>
-                  <div className="node-card fullstack-node">
-                    <div className="node-icon"><i className="fa-solid fa-code"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">FULL STACK</span>
-                      <h4 className="node-name">MERN Web Dev</h4>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Node 8 */}
-                <div className="orbit-node node-pos-315" onClick={() => openEnrollModalFor('SOC Analyst & Network Defense')}>
-                  <div className="node-card threat-node">
-                    <div className="node-icon"><i className="fa-solid fa-bug"></i></div>
-                    <div className="node-info">
-                      <span className="node-tag">THREAT INTEL</span>
-                      <h4 className="node-name">Threat Intelligence</h4>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
 
-        {/* OVERLAPPING BOTTOM STATS BAR */}
-        <div className="container">
+        {/* OVERLAPPING WIDE BOTTOM STATS BAR */}
+        <div className="hero-stats-container">
           <div className="new-stats-bar">
             <div className="ns-item">
               <div className="ns-icon"><i className="fa-solid fa-users"></i></div>
