@@ -51,6 +51,9 @@ const authRoutes = require('./routes/authRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const inquiryRoutes = require('./routes/inquiryRoutes');
+const adminRoutes = require('./routes/adminRoutes');
+const studentRoutes = require('./routes/studentRoutes');
+const lectureRoutes = require('./routes/lectureRoutes');
 
 // 7. Base server health verification endpoint
 app.get('/api/v1/health', (req, res) => {
@@ -66,6 +69,10 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/courses', courseRoutes);
 app.use('/api/v1/enrollments', enrollmentRoutes);
 app.use('/api/v1/inquiries', inquiryRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/student', studentRoutes);
+app.use('/api/v1/lectures', lectureRoutes);
+
 
 // 8. Capture and forward unhandled endpoint requests
 app.all('*', (req, res, next) => {

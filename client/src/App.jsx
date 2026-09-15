@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import AuthLayoutContainer from './components/auth/AuthLayoutContainer';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -14,6 +14,16 @@ import Projects from './pages/Projects';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminStudents from './pages/admin/AdminStudents';
+import AdminCourses from './pages/admin/AdminCourses';
+import AdminEnrollments from './pages/admin/AdminEnrollments';
+import AdminInquiries from './pages/admin/AdminInquiries';
+import CourseDetail from './pages/CourseDetail';
+import MyCourses from './pages/MyCourses';
+import Learn from './pages/Learn';
+import AdminCurriculum from './pages/admin/AdminCurriculum';
 import { academyService } from './services/academyService';
 
 const AppContext = createContext();
@@ -123,29 +133,53 @@ export default function App() {
       }}>
         <BrowserRouter>
           <Routes>
-            {/* Protected Main Website Routes (Requires Successful Login) */}
-            <Route element={<ProtectedRoute />}>
-              <Route path="/" element={<Layout />}>
-                <Route index element={<Home />} />
-                <Route path="about" element={<About />} />
-                <Route path="courses" element={<Courses />} />
+            {/* Main Website Routes */}
+            <Route path="/" element={<Layout />}>
+              {/* Public Routes (Accessible without authentication) */}
+              <Route index element={<Home />} />
+              <Route path="about" element={<About />} />
+              <Route path="courses" element={<Courses />} />
+              <Route path="courses/:slug" element={<CourseDetail />} />
+              <Route path="projects" element={<Projects />} />
+              <Route path="contact" element={<Contact />} />
+              <Route path="certificate" element={<Certificate />} />
+
+              {/* Protected Student Routes (Authenticated Students ONLY) */}
+              <Route element={<ProtectedRoute allowedRoles={['student']} />}>
                 <Route path="dashboard" element={<Dashboard />} />
-                <Route path="certificate" element={<Certificate />} />
-                <Route path="projects" element={<Projects />} />
-                <Route path="contact" element={<Contact />} />
+                <Route path="my-courses" element={<MyCourses />} />
+                <Route path="learn/:courseId" element={<Learn />} />
               </Route>
             </Route>
 
-            {/* Public Authentication Routes (Redirects to / if already logged in) */}
+            {/* Protected Admin Routes (Admin & Super Admin ONLY) */}
+            <Route element={<ProtectedRoute allowedRoles={['admin', 'super_admin']} />}>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="students" element={<AdminStudents />} />
+                <Route path="courses" element={<AdminCourses />} />
+                <Route path="courses/:courseId/curriculum" element={<AdminCurriculum />} />
+                <Route path="enrollments" element={<AdminEnrollments />} />
+                <Route path="inquiries" element={<AdminInquiries />} />
+                <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
+              </Route>
+            </Route>
+
+            {/* Public Authentication Routes */}
             <Route element={<PublicOnlyRoute />}>
               <Route element={<AuthLayoutContainer />}>
                 <Route path="login" element={<Login />} />
                 <Route path="signup" element={<Signup />} />
               </Route>
             </Route>
+
+            {/* Fallback route */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </BrowserRouter>
       </AppContext.Provider>
     </AuthProvider>
   );
 }
+

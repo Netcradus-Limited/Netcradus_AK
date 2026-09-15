@@ -6,8 +6,15 @@ const asyncHandler = require('../utils/asyncHandler');
  * Sign JWT and attach HTTP-Only Cookie
  */
 const createSendToken = (user, statusCode, res) => {
-  const jwtSecret = process.env.JWT_SECRET || 'netcradus_default_jwt_secret_key_2026_fallback';
-  const token = jwt.sign({ id: user._id, role: user.role }, jwtSecret, {
+  if (!process.env.JWT_SECRET) {
+    console.error('FATAL: JWT_SECRET environment variable is missing.');
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error: Authentication key missing.',
+    });
+  }
+
+  const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 
@@ -56,12 +63,13 @@ exports.signup = asyncHandler(async (req, res) => {
     });
   }
 
-  // Create user record
+  // Create user record - strictly enforce student role for public signup
   const newUser = await User.create({
     fullName,
     email,
     phone,
     password,
+    role: 'student',
   });
 
   createSendToken(newUser, 201, res);

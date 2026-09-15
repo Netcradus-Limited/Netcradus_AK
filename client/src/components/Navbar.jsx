@@ -34,64 +34,102 @@ export default function Navbar() {
 
         {/* Desktop Nav Links */}
         <ul className={`nav-menu ${isMobileMenuOpen ? 'active' : ''}`} id="nav-menu">
-          <li className="nav-item">
-            <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} end>
-              Home
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-              About
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink to="/courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-              Courses
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-              Dashboard
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink to="/certificate" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-              Certificate
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink to="/projects" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-              Projects
-            </NavLink>
-          </li>
-          <li className="nav-item">
-            <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
-              Contact Us
-            </NavLink>
-          </li>
+          {isAuthenticated && (user?.role === 'admin' || user?.role === 'super_admin') ? (
+            /* ADMIN NAVBAR LINKS */
+            <>
+              <li className="nav-item">
+                <NavLink to="/admin/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  <i className="fa-solid fa-shield-halved" style={{ marginRight: '5px' }}></i> Admin Panel
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} end>
+                  Home
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Courses
+                </NavLink>
+              </li>
+            </>
+          ) : isAuthenticated && user?.role === 'student' ? (
+            /* STUDENT NAVBAR LINKS */
+            <>
+              <li className="nav-item">
+                <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} end>
+                  Home
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Courses
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/my-courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  My Courses
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Dashboard
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/projects" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Projects
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Contact Us
+                </NavLink>
+              </li>
+            </>
+          ) : (
+            /* GUEST NAVBAR LINKS */
+            <>
+              <li className="nav-item">
+                <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} end>
+                  Home
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  About
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Courses
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/projects" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Projects
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Contact Us
+                </NavLink>
+              </li>
+            </>
+          )}
         </ul>
 
         {/* Navbar Right Action */}
         <div className="nav-actions">
           {isAuthenticated ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span className="user-profile-badge" style={{ color: 'var(--cyan-primary)', fontSize: '0.85rem', fontWeight: 600 }}>
-                <i className="fa-regular fa-user-circle" style={{ marginRight: '6px' }}></i>
+            <div className="user-nav-profile">
+              <span className="user-profile-badge">
+                <i className="fa-regular fa-user-circle"></i>
                 {user?.fullName ? user.fullName.split(' ')[0] : 'Student'}
               </span>
               <button
                 onClick={handleLogout}
-                className="btn btn-outline"
-                style={{
-                  padding: '6px 14px',
-                  fontSize: '0.82rem',
-                  borderRadius: 'var(--radius-full)',
-                  borderColor: 'rgba(255, 71, 87, 0.4)',
-                  color: '#ff4757',
-                  background: 'rgba(255, 71, 87, 0.05)',
-                  cursor: 'pointer',
-                  transition: 'var(--transition)',
-                }}
+                className="btn-nav-logout"
                 title="Log out of session"
               >
                 <i className="fa-solid fa-arrow-right-from-bracket"></i> Logout

@@ -23,7 +23,31 @@ export default function AuthLayout({
       desc: 'Work on live security R&D and AI agent engineering.',
     },
   ],
+  singleCard = false,
+  showLogoInCard = true,
 }) {
+  if (singleCard) {
+    return (
+      <div className="auth-page-section single-card-section">
+        <div className="auth-single-container">
+          <div className="auth-form-card login-glass-card">
+            {showLogoInCard && (
+              <div className="auth-card-logo-wrapper">
+                <img src="/images/logo.png" alt="Netcradus Academy" className="auth-card-logo-img" />
+              </div>
+            )}
+            <div className="auth-form-header">
+              <h2 className="auth-card-title">{title}</h2>
+              {subtitle && <p className="auth-card-subtitle">{subtitle}</p>}
+            </div>
+
+            {children}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="auth-page-section">
       <div className="container">
@@ -68,7 +92,7 @@ export default function AuthLayout({
             </p>
 
             <div className="auth-left-points" style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-              {leftPoints.map((point, idx) => (
+              {(leftPoints || []).map((point, idx) => (
                 <div
                   key={idx}
                   style={{

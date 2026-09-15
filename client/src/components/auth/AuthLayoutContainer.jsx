@@ -1,20 +1,26 @@
 import React from 'react';
-import { Outlet, Link } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router-dom';
 import { useApp } from '../../App';
 
 export default function AuthLayoutContainer() {
   const { toast } = useApp();
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
 
   return (
     <div className="auth-site-wrapper">
       {/* Minimal Clean Header for Auth Pages */}
       <header className="auth-minimal-header">
-        <div className="container auth-minimal-header-container">
-          <Link to="/" className="auth-header-brand" title="Return to Netcradus Home">
-            <img src="/images/logo.png" alt="Netcradus Academy" className="auth-header-logo" />
-          </Link>
+        <div className="auth-minimal-header-container">
+          {!isLoginPage ? (
+            <Link to="/" className="auth-header-brand" title="Return to Netcradus Home">
+              <img src="/images/logo.png" alt="Netcradus Academy" className="auth-header-logo" />
+            </Link>
+          ) : (
+            <div></div>
+          )}
 
-          <Link to="/" className="auth-back-home-link">
+          <Link to="/" className="auth-back-home-link" title="Return to Home">
             <i className="fa-solid fa-arrow-left"></i>
             <span>Back to Home</span>
           </Link>

@@ -19,10 +19,17 @@ const protect = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // 2. Verify JWT Token
+  // 2. Verify JWT Token safely without fallback secret
   try {
-    const jwtSecret = process.env.JWT_SECRET || 'netcradus_default_jwt_secret_key_2026_fallback';
-    const decoded = jwt.verify(token, jwtSecret);
+    if (!process.env.JWT_SECRET) {
+      console.error('FATAL: JWT_SECRET environment variable is missing.');
+      return res.status(500).json({
+        success: false,
+        message: 'Server configuration error: Authentication key missing.',
+      });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 3. Check if User still exists in Database
     const currentUser = await User.findById(decoded.id);
@@ -52,4 +59,47 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
-module.exports = { protect };
+/**
+ * Optional authentication middleware: populates req.user if token is present, but does not block guests if missing
+ */
+const optionalProtect = asyncHandler(async (req, res, next) => {
+  let token;
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+    token = req.headers.authorization.split(' ')[1];
+  }
+
+  if (token && process.env.JWT_SECRET) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const currentUser = await User.findById(decoded.id);
+      if (currentUser && currentUser.status !== 'disabled') {
+        req.user = currentUser;
+      }
+    } catch (err) {
+      // Ignore token verification errors on optional routes
+    }
+  }
+  next();
+});
+
+/**
+ * Restrict routes to specific user roles
+ * @param  {...string} roles Allowed roles ('admin', 'super_admin', 'student', etc.)
+ */
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user || !roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: 'You do not have permission to perform this action.',
+      });
+    }
+    next();
+  };
+};
+
+module.exports = { protect, optionalProtect, restrictTo };
+
+

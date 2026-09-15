@@ -50,6 +50,27 @@ export const academyService = {
   },
 
   /**
+   * Fetch public course curriculum by slug (modules & lectures)
+   * @param {string} slug - Course slug identifier
+   */
+  async getPublicCurriculum(slug) {
+    const response = await fetch(`${API_BASE_URL}/courses/${slug}/curriculum`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || `Failed to fetch curriculum for '${slug}'.`);
+    }
+
+    return result.data;
+  },
+
+
+  /**
    * Submit course enrollment application
    * @param {Object} payload - { fullName, email, phone, courseName, courseSlug, courseId }
    */

@@ -1,11 +1,36 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { useApp } from '../App';
+import { useAuth } from '../context/AuthContext';
+import { studentService } from '../services/studentService';
 
 export default function Dashboard() {
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState('progress');
+  const { user: authUser } = useAuth();
   const { showToast } = useApp();
+
+  const [activeTab, setActiveTab] = useState('courses');
+  const [dashData, setDashData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchDashboard = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await studentService.getDashboard();
+      setDashData(data);
+    } catch (err) {
+      console.error('[StudentDashboard] Fetch error:', err);
+      setError(err.message || 'Failed to load your student dashboard.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -14,23 +39,23 @@ export default function Dashboard() {
     const tabKey = hash || (tabParam ? tabParam.toLowerCase() : '');
 
     const tabMap = {
+      'courses': 'courses',
+      'my-courses': 'courses',
       'assignments': 'assignments',
-      'assignment': 'assignments',
-      'classes': 'live',
-      'class': 'live',
       'live': 'live',
       'recorded': 'recorded',
       'notes': 'notes',
-      'study-notes': 'notes',
-      'progress': 'progress',
       'labs': 'labs',
-      'sandbox': 'labs'
     };
 
     if (tabKey && tabMap[tabKey]) {
       setActiveTab(tabMap[tabKey]);
     }
   }, [location]);
+
+  const user = dashData?.user || authUser || {};
+  const summary = dashData?.summary || { totalEnrollments: 0, activeEnrollments: 0, completedEnrollments: 0 };
+  const enrollments = dashData?.enrollments || [];
 
   return (
     <div className="dashboard-page">
@@ -39,7 +64,9 @@ export default function Dashboard() {
         <div className="container text-center">
           <span className="section-badge"><i className="fa-solid fa-gauge-high"></i> STUDENT PORTAL</span>
           <h1 className="page-title">Learning Management Dashboard</h1>
-          <p className="page-subtitle">Welcome back, Rahul Sharma! Manage your courses, assignments, live classes, and cloud labs.</p>
+          <p className="page-subtitle">
+            Welcome back, {user.fullName || 'Student'}! Manage your courses, enrollments, and academic progress.
+          </p>
         </div>
       </section>
 
@@ -47,414 +74,253 @@ export default function Dashboard() {
       <section className="section dashboard-section" id="dashboard">
         <div className="container">
           <div className="dashboard-portal-card">
-            
+
             {/* Student Header Info Bar */}
             <div className="dash-user-header">
               <div className="dash-user-profile">
                 <div className="dash-avatar">
-                  <i className="fa-solid fa-user-shield"></i>
+                  <i className="fa-solid fa-user-graduate"></i>
                 </div>
                 <div className="dash-user-details">
-                  <h3>Rahul Sharma <span className="dash-user-badge"><i className="fa-solid fa-circle-check"></i> Active Student</span></h3>
-                  <p><i className="fa-solid fa-book-bookmark"></i> Enrolled: <strong>Ethical Hacking & VAPT Track</strong> | Student ID: <code>NC-2026-8842</code></p>
-                </div>
-              </div>
-              
-              <div className="dash-user-quick-stats">
-                <div className="dash-stat-pill">
-                  <span className="stat-pill-icon"><i className="fa-solid fa-fire"></i></span>
-                  <div>
-                    <strong>14 Days</strong>
-                    <span>Learning Streak</span>
-                  </div>
-                </div>
-                <div className="dash-stat-pill">
-                  <span className="stat-pill-icon cyan"><i className="fa-solid fa-chart-pie"></i></span>
-                  <div>
-                    <strong>78%</strong>
-                    <span>Overall Completion</span>
-                  </div>
-                </div>
-                <button className="btn btn-sm btn-cyan" onClick={() => showToast("Connecting to Live Zoom Interactive Security Classroom... (Meeting ID: 884-2910)")}>
-                  <i className="fa-solid fa-circle-play"></i> Join Live Class
-                </button>
-              </div>
-            </div>
-
-            {/* Quick Dashboard Action Cards Hub */}
-            <div className="dash-quick-hub" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px', margin: '20px 0 25px' }}>
-              <div className="quick-hub-card" style={{ background: 'rgba(0, 210, 255, 0.06)', border: '1px solid var(--border-glow)', padding: '18px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('assignments')}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', display: 'flex', alignItems: 'center', justify: 'center', fontSize: '1.3rem' }}>
-                    <i className="fa-solid fa-pen-to-square"></i>
-                  </div>
-                  <div>
-                    <h4 style={{ color: 'var(--white)', fontSize: '1rem', marginBottom: '2px' }}>Assignments</h4>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>2 Pending Tasks Due</p>
-                  </div>
-                </div>
-                <span className="btn btn-sm btn-outline-cyan">View <i className="fa-solid fa-arrow-right"></i></span>
-              </div>
-
-              <div className="quick-hub-card" style={{ background: 'rgba(0, 82, 212, 0.08)', border: '1px solid rgba(0, 82, 212, 0.3)', padding: '18px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('live')}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(255, 77, 77, 0.15)', color: '#ff4d4d', display: 'flex', alignItems: 'center', justify: 'center', fontSize: '1.3rem' }}>
-                    <i className="fa-solid fa-video"></i>
-                  </div>
-                  <div>
-                    <h4 style={{ color: 'var(--white)', fontSize: '1rem', marginBottom: '2px' }}>Live Classes</h4>
-                    <p style={{ color: '#ff4d4d', fontSize: '0.8rem', fontWeight: 700 }}>🔴 Session at 7:00 PM</p>
-                  </div>
-                </div>
-                <span className="btn btn-sm btn-cyan">Join <i className="fa-solid fa-circle-play"></i></span>
-              </div>
-
-              <div className="quick-hub-card" style={{ background: 'rgba(0, 210, 255, 0.06)', border: '1px solid var(--border-glow)', padding: '18px', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', cursor: 'pointer' }} onClick={() => setActiveTab('notes')}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <div style={{ width: '44px', height: '44px', borderRadius: '10px', background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', display: 'flex', alignItems: 'center', justify: 'center', fontSize: '1.3rem' }}>
-                    <i className="fa-solid fa-book-open"></i>
-                  </div>
-                  <div>
-                    <h4 style={{ color: 'var(--white)', fontSize: '1rem', marginBottom: '2px' }}>Study Notes</h4>
-                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>PDF Guides & Scripts</p>
-                  </div>
-                </div>
-                <span className="btn btn-sm btn-outline-cyan">Notes <i className="fa-solid fa-download"></i></span>
-              </div>
-            </div>
-
-            {/* Dashboard Internal Navigation Tabs */}
-            <div className="dash-tabs-bar">
-              <button className={`dash-tab-btn ${activeTab === 'progress' ? 'active' : ''}`} onClick={() => setActiveTab('progress')}>
-                <i className="fa-solid fa-chart-line"></i> Progress Graph
-              </button>
-              <button className={`dash-tab-btn ${activeTab === 'assignments' ? 'active' : ''}`} onClick={() => setActiveTab('assignments')}>
-                <i className="fa-solid fa-pen-to-square"></i> Assignments <span className="dash-badge-count">2 Pending</span>
-              </button>
-              <button className={`dash-tab-btn ${activeTab === 'live' ? 'active' : ''}`} onClick={() => setActiveTab('live')}>
-                <i className="fa-solid fa-video"></i> Live Classes <span className="dash-badge-live">🔴 Live</span>
-              </button>
-              <button className={`dash-tab-btn ${activeTab === 'recorded' ? 'active' : ''}`} onClick={() => setActiveTab('recorded')}>
-                <i className="fa-solid fa-film"></i> Recorded Classes
-              </button>
-              <button className={`dash-tab-btn ${activeTab === 'notes' ? 'active' : ''}`} onClick={() => setActiveTab('notes')}>
-                <i className="fa-solid fa-file-lines"></i> Study Notes
-              </button>
-              <button className={`dash-tab-btn ${activeTab === 'labs' ? 'active' : ''}`} onClick={() => setActiveTab('labs')}>
-                <i className="fa-solid fa-terminal"></i> Virtual Sandbox
-              </button>
-            </div>
-
-            {/* Tab Panel 1: Progress Graph & Analytics */}
-            <div className={`dash-panel ${activeTab === 'progress' ? 'active' : ''}`} id="dash-panel-progress">
-              <div className="dash-grid-2col">
-                <div className="dash-box">
-                  <div className="dash-box-header">
-                    <h4><i className="fa-solid fa-chart-simple"></i> Weekly Learning Hours Graph</h4>
-                    <span className="dash-tag">Last 7 Days</span>
-                  </div>
-                  <div className="progress-bar-chart">
-                    <div className="chart-col">
-                      <div className="bar-fill" style={{ height: '60%' }} data-hours="4.5h"></div>
-                      <span>Mon</span>
-                    </div>
-                    <div className="chart-col">
-                      <div className="bar-fill" style={{ height: '85%' }} data-hours="6.2h"></div>
-                      <span>Tue</span>
-                    </div>
-                    <div className="chart-col">
-                      <div className="bar-fill" style={{ height: '40%' }} data-hours="3.0h"></div>
-                      <span>Wed</span>
-                    </div>
-                    <div className="chart-col">
-                      <div className="bar-fill" style={{ height: '95%' }} data-hours="7.8h"></div>
-                      <span>Thu</span>
-                    </div>
-                    <div className="chart-col">
-                      <div className="bar-fill" style={{ height: '75%' }} data-hours="5.5h"></div>
-                      <span>Fri</span>
-                    </div>
-                    <div className="chart-col highlight">
-                      <div className="bar-fill" style={{ height: '100%' }} data-hours="8.5h"></div>
-                      <span>Sat</span>
-                    </div>
-                    <div className="chart-col">
-                      <div className="bar-fill" style={{ height: '50%' }} data-hours="4.0h"></div>
-                      <span>Sun</span>
-                    </div>
-                  </div>
-                  <p className="chart-caption">
-                    <i className="fa-solid fa-arrow-trend-up" style={{ color: 'var(--cyan-primary)' }}></i> You logged <strong>39.5 Hours</strong> of hands-on practice this week (+18% higher than average).
+                  <h3>
+                    {user.fullName || 'Student'}{' '}
+                    <span className={`dash-user-badge ${user.status === 'disabled' ? 'disabled' : ''}`}>
+                      <i className={`fa-solid ${user.status === 'disabled' ? 'fa-user-xmark' : 'fa-circle-check'}`}></i>{' '}
+                      {user.status === 'disabled' ? 'Account Disabled' : 'Active Student'}
+                    </span>
+                  </h3>
+                  <p>
+                    <i className="fa-solid fa-envelope"></i> {user.email || 'N/A'}{' '}
+                    {user.phone && <>| <i className="fa-solid fa-phone"></i> {user.phone}</>}{' '}
+                    | Joined: <strong>{user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'N/A'}</strong>
                   </p>
                 </div>
+              </div>
 
-                <div className="dash-box">
-                  <div className="dash-box-header">
-                    <h4><i className="fa-solid fa-shield-halved"></i> Skill Mastery Radar</h4>
-                    <span className="dash-tag green">On Track</span>
+              {/* Real Summary Metrics Pills */}
+              <div className="dash-user-quick-stats">
+                <div className="dash-stat-pill">
+                  <span className="stat-pill-icon"><i className="fa-solid fa-book-open"></i></span>
+                  <div>
+                    <strong>{summary.totalEnrollments}</strong>
+                    <span>Total Enrolled</span>
                   </div>
-                  <div className="skill-bars-list">
-                    <div className="skill-bar-item">
-                      <div className="sb-label"><span>Network Penetration Testing</span><strong>92%</strong></div>
-                      <div className="sb-track"><div className="sb-fill" style={{ width: '92%' }}></div></div>
-                    </div>
-                    <div className="skill-bar-item">
-                      <div className="sb-label"><span>Vulnerability Assessment (VAPT)</span><strong>85%</strong></div>
-                      <div className="sb-track"><div className="sb-fill" style={{ width: '85%' }}></div></div>
-                    </div>
-                    <div className="skill-bar-item">
-                      <div className="sb-label"><span>Web App Security & OWASP Top 10</span><strong>78%</strong></div>
-                      <div className="sb-track"><div className="sb-fill" style={{ width: '78%' }}></div></div>
-                    </div>
-                    <div className="skill-bar-item">
-                      <div className="sb-label"><span>Python Exploit Automation</span><strong>70%</strong></div>
-                      <div className="sb-track"><div className="sb-fill" style={{ width: '70%' }}></div></div>
-                    </div>
+                </div>
+                <div className="dash-stat-pill">
+                  <span className="stat-pill-icon cyan"><i className="fa-solid fa-circle-play"></i></span>
+                  <div>
+                    <strong>{summary.activeEnrollments}</strong>
+                    <span>Active Courses</span>
+                  </div>
+                </div>
+                <div className="dash-stat-pill">
+                  <span className="stat-pill-icon green" style={{ background: 'rgba(46, 213, 115, 0.15)', color: '#2ed573' }}>
+                    <i className="fa-solid fa-graduation-cap"></i>
+                  </span>
+                  <div>
+                    <strong>{summary.completedEnrollments}</strong>
+                    <span>Completed</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Tab Panel 2: Assignments */}
-            <div className={`dash-panel ${activeTab === 'assignments' ? 'active' : ''}`} id="dash-panel-assignments">
-              <div className="dash-cards-list">
-                <div className="assignment-item">
-                  <div className="as-icon pending"><i className="fa-solid fa-clock"></i></div>
-                  <div className="as-details">
-                    <h4>Assignment 4: Web Application SQL Injection & Privilege Escalation Audit</h4>
-                    <p>Module 3 • Due: Tomorrow at 11:59 PM | Target Machine IP: <code>10.10.14.88</code></p>
-                    <div className="as-tags">
-                      <span className="as-tag warning">In Progress</span>
-                      <span className="as-tag">Points: 100</span>
-                    </div>
-                  </div>
-                  <div className="as-actions">
-                    <button className="btn btn-sm btn-cyan" onClick={() => showToast('Opening Submission Portal for SQL Injection Lab. Upload your PDF report or Git repository.')}>
-                      Submit Assignment
-                    </button>
-                    <button className="btn btn-sm btn-outline" onClick={() => showToast('Downloading assignment instructions...')}>
-                      <i className="fa-solid fa-file-pdf"></i> Guidelines
-                    </button>
-                  </div>
-                </div>
-
-                <div className="assignment-item">
-                  <div className="as-icon pending"><i className="fa-solid fa-hourglass-start"></i></div>
-                  <div className="as-details">
-                    <h4>Assignment 5: Buffer Overflow & Metasploit Payload Customization</h4>
-                    <p>Module 4 • Due: Aug 05, 2026 | Environment: Kali Linux Sandbox</p>
-                    <div className="as-tags">
-                      <span className="as-tag">Pending</span>
-                      <span className="as-tag">Points: 100</span>
-                    </div>
-                  </div>
-                  <div className="as-actions">
-                    <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast('Opening Submission Portal for Buffer Overflow Lab. Upload your PDF report or Git repository.')}>
-                      Start Assignment
-                    </button>
-                  </div>
-                </div>
-
-                <div className="assignment-item completed">
-                  <div className="as-icon success"><i className="fa-solid fa-circle-check"></i></div>
-                  <div className="as-details">
-                    <h4>Assignment 3: Wireshark Network Packet Analysis & Threat Mitigation</h4>
-                    <p>Module 2 • Graded: 96 / 100 (Grade: A+)</p>
-                    <p className="instructor-feedback"><em>"Feedback from Mentor Dr. Vikram: Exceptional packet breakdown and accurate firewall rule formulation."</em></p>
-                  </div>
-                  <div className="as-actions">
-                    <span className="score-pill">Score: 96%</span>
-                  </div>
-                </div>
+            {/* Loading / Error States */}
+            {loading ? (
+              <div className="admin-loading-container" style={{ padding: '60px 20px' }}>
+                <div className="admin-spinner"></div>
+                <p>Loading your courses & enrollment data from server...</p>
               </div>
-            </div>
-
-            {/* Tab Panel 3: Live Classes */}
-            <div className={`dash-panel ${activeTab === 'live' ? 'active' : ''}`} id="dash-panel-live">
-              <div className="dash-grid-2col">
-                <div className="dash-box live-card-featured">
-                  <div className="live-status-badge">🔴 LIVE SESSION TODAY</div>
-                  <h3>Advanced Blind SQLi & WAF Bypass Techniques</h3>
-                  <p className="live-meta"><i className="fa-regular fa-clock"></i> Starts Today at 7:00 PM IST (In 2 Hours)</p>
-                  <div className="instructor-row">
-                    <div className="inst-avatar"><i className="fa-solid fa-user-gear"></i></div>
-                    <div>
-                      <h5>Dr. Vikram Singh</h5>
-                      <p>Lead Security Architect & Certified Ethical Hacker</p>
-                    </div>
-                  </div>
-                  <button className="btn btn-cyan btn-block" onClick={() => showToast("Connecting to Live Zoom Interactive Security Classroom... (Meeting ID: 884-2910)")}>
-                    <i className="fa-solid fa-video"></i> JOIN LIVE CLASSROOM NOW
+            ) : error ? (
+              <div className="admin-error-card" style={{ margin: '30px' }}>
+                <i className="fa-solid fa-triangle-exclamation"></i>
+                <p>{error}</p>
+                <button onClick={fetchDashboard} className="btn btn-sm btn-cyan" style={{ marginTop: '10px' }}>
+                  Retry Loading
+                </button>
+              </div>
+            ) : (
+              <>
+                {/* Dashboard Navigation Tabs */}
+                <div className="dash-tabs-bar" style={{ marginTop: '20px' }}>
+                  <button
+                    className={`dash-tab-btn ${activeTab === 'courses' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('courses')}
+                  >
+                    <i className="fa-solid fa-book-open"></i> My Courses ({enrollments.length})
+                  </button>
+                  <button
+                    className={`dash-tab-btn ${activeTab === 'assignments' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('assignments')}
+                  >
+                    <i className="fa-solid fa-pen-to-square"></i> Assignments
+                  </button>
+                  <button
+                    className={`dash-tab-btn ${activeTab === 'live' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('live')}
+                  >
+                    <i className="fa-solid fa-video"></i> Live Sessions
+                  </button>
+                  <button
+                    className={`dash-tab-btn ${activeTab === 'notes' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('notes')}
+                  >
+                    <i className="fa-solid fa-file-lines"></i> Study Materials
+                  </button>
+                  <button
+                    className={`dash-tab-btn ${activeTab === 'labs' ? 'active' : ''}`}
+                    onClick={() => setActiveTab('labs')}
+                  >
+                    <i className="fa-solid fa-terminal"></i> Cloud Sandbox
                   </button>
                 </div>
 
-                <div className="dash-box">
-                  <h4><i className="fa-regular fa-calendar-days"></i> Upcoming Live Class Schedule</h4>
-                  <ul className="schedule-list">
-                    <li>
-                      <div className="sch-date"><span>FRI</span><strong>30 JUL</strong></div>
-                      <div className="sch-info">
-                        <h5>Metasploit Framework Deep Dive & Exploit Payloads</h5>
-                        <p>7:00 PM - 9:00 PM | Instructor: Rajesh Kumar</p>
+                {/* Tab 1: My Courses & Enrollments */}
+                <div className={`dash-panel ${activeTab === 'courses' ? 'active' : ''}`}>
+                  {enrollments.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '50px 20px', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', margin: '20px 0' }}>
+                      <i className="fa-solid fa-book-bookmark" style={{ fontSize: '3rem', color: 'var(--cyan-primary)', marginBottom: '15px' }}></i>
+                      <h3 style={{ color: 'var(--white)', marginBottom: '8px' }}>You are not enrolled in any courses yet</h3>
+                      <p style={{ color: 'var(--text-muted)', marginBottom: '20px', maxWidth: '500px', margin: '0 auto 20px' }}>
+                        Browse our industry-accredited Cybersecurity, AI, Cloud Computing, and Full Stack courses to start learning.
+                      </p>
+                      <Link to="/courses" className="btn btn-cyan">
+                        <i className="fa-solid fa-compass"></i> Explore Courses Catalog
+                      </Link>
+                    </div>
+                  ) : (
+                    <div className="dash-grid-2col" style={{ marginTop: '20px' }}>
+                      {enrollments.map((item) => {
+                        const course = item.courseId || {};
+                        return (
+                          <div key={item._id} className="dash-box" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-md)', padding: '24px' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                              <span className="dash-tag" style={{ background: 'rgba(0, 210, 255, 0.12)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)', fontSize: '0.75rem' }}>
+                                {course.category || 'ACADEMY COURSE'}
+                              </span>
+                              <span className={`admin-badge ${item.status === 'active' ? 'success' : item.status === 'completed' ? 'info' : 'warning'}`}>
+                                {item.status}
+                              </span>
+                            </div>
+
+                            <h3 style={{ fontSize: '1.25rem', color: 'var(--white)', marginBottom: '8px' }}>
+                              {course.title || 'Enrolled Course'}
+                            </h3>
+
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', marginBottom: '16px', minHeight: '40px' }}>
+                              {course.shortDescription || 'Hands-on practical training with lab access and certification.'}
+                            </p>
+
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '15px', fontSize: '0.82rem', color: 'var(--text-muted)', marginBottom: '18px', borderTop: '1px solid var(--border-subtle)', paddingTop: '12px' }}>
+                              <div><i className="fa-regular fa-calendar"></i> Enrolled: <strong>{new Date(item.createdAt).toLocaleDateString()}</strong></div>
+                              {course.duration && <div><i className="fa-regular fa-clock"></i> Duration: <strong>{course.duration}</strong></div>}
+                              {item.enrollmentType && <div><i className="fa-solid fa-tag"></i> Type: <strong style={{ textTransform: 'uppercase' }}>{item.enrollmentType}</strong></div>}
+                            </div>
+
+                            {/* Progress bar */}
+                            <div style={{ marginBottom: '18px' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                                <span>Course Progress</span>
+                                <strong>{item.progressPercentage || 0}%</strong>
+                              </div>
+                              <div style={{ height: '6px', background: 'var(--bg-dark)', borderRadius: '3px', overflow: 'hidden' }}>
+                                <div style={{ width: `${item.progressPercentage || 0}%`, height: '100%', background: 'var(--cyan-primary)', transition: 'var(--transition)' }}></div>
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: '10px' }}>
+                              <Link to={`/learn/${course._id || course.slug}`} className="btn btn-sm btn-cyan" style={{ flex: 1, textAlign: 'center' }}>
+                                <i className="fa-solid fa-circle-play"></i> Access Course
+                              </Link>
+                              <button type="button" className="btn btn-sm btn-outline-cyan" onClick={() => showToast(`Course info: ${course.title}`)}>
+                                <i className="fa-solid fa-circle-info"></i> Details
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Tab 2: Assignments (Standard Learning Support) */}
+                <div className={`dash-panel ${activeTab === 'assignments' ? 'active' : ''}`}>
+                  <div className="dash-box" style={{ padding: '30px', margin: '20px 0' }}>
+                    <h4><i className="fa-solid fa-pen-to-square"></i> Practical Lab Assignments</h4>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                      Submit your hands-on laboratory audit reports and code repositories for instructor feedback.
+                    </p>
+
+                    <div className="dash-cards-list">
+                      <div className="assignment-item">
+                        <div className="as-icon pending"><i className="fa-solid fa-clock"></i></div>
+                        <div className="as-details">
+                          <h4>Module Audit: Practical Security Assessment</h4>
+                          <p>Submit your penetration testing or code audit report for enrolled courses.</p>
+                          <div className="as-tags">
+                            <span className="as-tag warning">Standard Lab</span>
+                            <span className="as-tag">Points: 100</span>
+                          </div>
+                        </div>
+                        <div className="as-actions">
+                          <button className="btn btn-sm btn-cyan" onClick={() => showToast('Opening Lab Submission Portal...')}>
+                            Submit Lab Report
+                          </button>
+                        </div>
                       </div>
-                      <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast('Class reminder set for Friday!')}>
-                        Set Reminder
-                      </button>
-                    </li>
-                    <li>
-                      <div className="sch-date"><span>MON</span><strong>02 AUG</strong></div>
-                      <div className="sch-info">
-                        <h5>Cloud Pentesting: AWS S3 Bucket Misconfigurations</h5>
-                        <p>7:00 PM - 9:00 PM | Instructor: Ananya Sharma</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Tab 3: Live Sessions */}
+                <div className={`dash-panel ${activeTab === 'live' ? 'active' : ''}`}>
+                  <div className="dash-box" style={{ padding: '30px', margin: '20px 0' }}>
+                    <h4><i className="fa-solid fa-video"></i> Interactive Live Classroom</h4>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                      Join live interactive mentoring sessions and Q&A classrooms with Senior Netcradus Engineers.
+                    </p>
+                    <button className="btn btn-cyan" onClick={() => showToast('Connecting to Live Interactive Zoom Classroom...')}>
+                      <i className="fa-solid fa-video"></i> Join Live Classroom Stream
+                    </button>
+                  </div>
+                </div>
+
+                {/* Tab 4: Study Materials */}
+                <div className={`dash-panel ${activeTab === 'notes' ? 'active' : ''}`}>
+                  <div className="dash-box" style={{ padding: '30px', margin: '20px 0' }}>
+                    <h4><i className="fa-solid fa-file-lines"></i> Course Handouts & Resources</h4>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                      Download official Netcradus syllabus documents, lab setup manuals, and architecture guides.
+                    </p>
+                    <div className="notes-grid">
+                      <div className="note-card">
+                        <div className="note-icon pdf"><i className="fa-solid fa-file-pdf"></i></div>
+                        <div className="note-info">
+                          <h4>Netcradus Academy Official Student Guide (2026)</h4>
+                          <p>PDF Document • Official Student Portal Manual</p>
+                        </div>
+                        <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast('Downloading Official Student Guide PDF...')}>
+                          <i className="fa-solid fa-download"></i> Download
+                        </button>
                       </div>
-                      <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast('Class reminder set for Monday!')}>
-                        Set Reminder
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-
-            {/* Tab Panel 4: Recorded Classes */}
-            <div className={`dash-panel ${activeTab === 'recorded' ? 'active' : ''}`} id="dash-panel-recorded">
-              <div className="dash-grid-3col">
-                <div className="video-card">
-                  <div className="video-thumb cyber-bg">
-                    <span className="video-duration">1h 45m</span>
-                    <button className="play-btn" onClick={() => showToast('Launching HD Video Player for Lecture 14: Metasploit Deep Dive...')}><i className="fa-solid fa-play"></i></button>
-                  </div>
-                  <div className="video-info">
-                    <h4>Lecture 14: Metasploit Deep Dive</h4>
-                    <p>Exploit Payload generation, Meterpreter sessions & pivoting.</p>
-                    <div className="video-footer">
-                      <span>Watched 100%</span>
-                      <button className="btn-link" onClick={() => showToast("Downloading official syllabus/notes for Metasploit Lecture Notes...")}><i className="fa-solid fa-download"></i> Notes</button>
                     </div>
                   </div>
                 </div>
 
-                <div className="video-card">
-                  <div className="video-thumb ai-bg">
-                    <span className="video-duration">2h 10m</span>
-                    <button className="play-btn" onClick={() => showToast('Launching HD Video Player for Lecture 13: Burp Suite Pro Vulnerability Scanning...')}><i className="fa-solid fa-play"></i></button>
-                  </div>
-                  <div className="video-info">
-                    <h4>Lecture 13: Burp Suite Pro Scanning</h4>
-                    <p>Target intruder attacks, repeater, macro config & extensions.</p>
-                    <div className="video-footer">
-                      <span>Watched 100%</span>
-                      <button className="btn-link" onClick={() => showToast("Downloading official syllabus/notes for Burp Suite Lecture Notes...")}><i className="fa-solid fa-download"></i> Notes</button>
-                    </div>
+                {/* Tab 5: Cloud Sandbox */}
+                <div className={`dash-panel ${activeTab === 'labs' ? 'active' : ''}`}>
+                  <div className="dash-box" style={{ padding: '30px', margin: '20px 0' }}>
+                    <h4><i className="fa-solid fa-terminal"></i> Cloud Virtual Sandbox Environment</h4>
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '20px' }}>
+                      Access isolated cloud sandbox virtual terminals pre-loaded with security tools and dev stacks.
+                    </p>
+                    <button className="btn btn-cyan" onClick={() => showToast('Provisioning Cloud Sandbox Terminal... Ready in 5 seconds!')}>
+                      <i className="fa-solid fa-terminal"></i> Launch Cloud Sandbox Terminal
+                    </button>
                   </div>
                 </div>
-
-                <div className="video-card">
-                  <div className="video-thumb cloud-bg">
-                    <span className="video-duration">1h 30m</span>
-                    <button className="play-btn" onClick={() => showToast('Launching HD Video Player for Lecture 12: Network Footprinting & Nmap NSE Scripts...')}><i className="fa-solid fa-play"></i></button>
-                  </div>
-                  <div className="video-info">
-                    <h4>Lecture 12: Network Nmap Footprinting</h4>
-                    <p>Port scanning strategies, firewall evasion & Nmap Scripting Engine.</p>
-                    <div className="video-footer">
-                      <span>Watched 100%</span>
-                      <button className="btn-link" onClick={() => showToast("Downloading official syllabus/notes for Nmap Lecture Notes...")}><i className="fa-solid fa-download"></i> Notes</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Tab Panel 5: Study Notes & Resources */}
-            <div className={`dash-panel ${activeTab === 'notes' ? 'active' : ''}`} id="dash-panel-notes">
-              <div className="notes-grid">
-                <div className="note-card">
-                  <div className="note-icon pdf"><i className="fa-solid fa-file-pdf"></i></div>
-                  <div className="note-info">
-                    <h4>Ethical Hacking & VAPT Master Cheatsheet (2026 Edition)</h4>
-                    <p>PDF Document • 4.2 MB | Updated last week</p>
-                  </div>
-                  <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast("Downloading official syllabus/notes for VAPT Master Cheatsheet...")}>
-                    <i className="fa-solid fa-download"></i> Download
-                  </button>
-                </div>
-
-                <div className="note-card">
-                  <div className="note-icon pdf"><i className="fa-solid fa-file-pdf"></i></div>
-                  <div className="note-info">
-                    <h4>OWASP Top 10 Web Security Vulnerability & Mitigation Guide</h4>
-                    <p>PDF Document • 8.1 MB | Complete Code Remediation Examples</p>
-                  </div>
-                  <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast("Downloading official syllabus/notes for OWASP Top 10 Mitigation Guide...")}>
-                    <i className="fa-solid fa-download"></i> Download
-                  </button>
-                </div>
-
-                <div className="note-card">
-                  <div className="note-icon zip"><i className="fa-solid fa-file-zipper"></i></div>
-                  <div className="note-info">
-                    <h4>Metasploit & Python Custom Exploit Scripts Bundle</h4>
-                    <p>ZIP Archive • 12.4 MB | Lab Scripts & Target PoCs</p>
-                  </div>
-                  <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast("Downloading official syllabus/notes for Custom Exploit Scripts Bundle...")}>
-                    <i className="fa-solid fa-download"></i> Download
-                  </button>
-                </div>
-
-                <div className="note-card">
-                  <div className="note-icon pdf"><i className="fa-solid fa-file-pdf"></i></div>
-                  <div className="note-info">
-                    <h4>Linux Command Line & Kernel Hardening Manual</h4>
-                    <p>PDF Document • 3.5 MB | SysAdmin & Defense Guide</p>
-                  </div>
-                  <button className="btn btn-sm btn-outline-cyan" onClick={() => showToast("Downloading official syllabus/notes for Linux Hardening Manual...")}>
-                    <i className="fa-solid fa-download"></i> Download
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* Tab Panel 6: Virtual Sandbox Labs */}
-            <div className={`dash-panel ${activeTab === 'labs' ? 'active' : ''}`} id="dash-panel-labs">
-              <div className="dash-grid-3col">
-                <div className="lab-card">
-                  <div className="lab-header">
-                    <span className="lab-status active">ONLINE</span>
-                    <i className="fa-solid fa-terminal lab-icon"></i>
-                  </div>
-                  <h4>Kali Linux Security Sandbox</h4>
-                  <p>Pre-configured cloud terminal with Metasploit, Nmap, Burp Suite & Hydra preinstalled.</p>
-                  <button className="btn btn-cyan btn-block" onClick={() => showToast("Provisioning Cloud Virtual Machine for Kali Linux Terminal... Environment ready in 5s!")}>
-                    <i className="fa-solid fa-terminal"></i> LAUNCH TERMINAL
-                  </button>
-                </div>
-
-                <div className="lab-card">
-                  <div className="lab-header">
-                    <span className="lab-status active">ONLINE</span>
-                    <i className="fa-solid fa-brain lab-icon"></i>
-                  </div>
-                  <h4>AI / PyTorch GPU Jupyter Cluster</h4>
-                  <p>Dedicated Tesla T4 GPU cloud notebook for model training & GenAI prompt engineering.</p>
-                  <button className="btn btn-cyan btn-block" onClick={() => showToast("Provisioning Cloud Virtual Machine for Jupyter GPU Lab... Environment ready in 5s!")}>
-                    <i className="fa-solid fa-code"></i> LAUNCH JUPYTER
-                  </button>
-                </div>
-
-                <div className="lab-card">
-                  <div className="lab-header">
-                    <span className="lab-status active">ONLINE</span>
-                    <i className="fa-solid fa-cloud-bolt lab-icon"></i>
-                  </div>
-                  <h4>AWS Cloud Infrastructure Target</h4>
-                  <p>Intentionally vulnerable multi-cloud AWS VPC environment for cloud security auditing.</p>
-                  <button className="btn btn-cyan btn-block" onClick={() => showToast("Provisioning Cloud Virtual Machine for AWS Vulnerable VPC... Environment ready in 5s!")}>
-                    <i className="fa-solid fa-cloud"></i> CONNECT LAB
-                  </button>
-                </div>
-              </div>
-            </div>
+              </>
+            )}
 
           </div>
         </div>

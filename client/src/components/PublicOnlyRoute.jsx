@@ -3,7 +3,7 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 export default function PublicOnlyRoute() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, user, loading } = useAuth();
 
   if (loading) {
     return (
@@ -20,8 +20,12 @@ export default function PublicOnlyRoute() {
   }
 
   if (isAuthenticated) {
-    return <Navigate to="/" replace />;
+    const targetPath = (user?.role === 'admin' || user?.role === 'super_admin')
+      ? '/admin/dashboard'
+      : '/dashboard';
+    return <Navigate to={targetPath} replace />;
   }
 
   return <Outlet />;
 }
+

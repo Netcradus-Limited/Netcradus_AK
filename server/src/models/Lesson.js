@@ -47,9 +47,14 @@ const lessonSchema = new mongoose.Schema(
       trim: true,
       lowercase: true,
     },
+    description: {
+      type: String,
+      trim: true,
+      default: '',
+    },
     type: {
       type: String,
-      enum: ['video', 'text', 'pdf', 'resource', 'quiz'],
+      enum: ['video', 'lab_video', 'text', 'pdf', 'resource', 'quiz'],
       required: [true, 'Lesson type is required'],
     },
     durationSeconds: {
@@ -83,10 +88,12 @@ const lessonSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
-    resources: {
-      type: [String],
-      default: [],
-    },
+    resources: [
+      {
+        title: { type: String, required: true },
+        url: { type: String, required: true },
+      },
+    ],
     quiz: {
       type: [quizQuestionSchema],
       default: [],

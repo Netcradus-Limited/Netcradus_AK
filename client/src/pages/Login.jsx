@@ -51,8 +51,12 @@ export default function Login() {
         password: formData.password,
         rememberMe: formData.rememberMe,
       });
-      showToast(`Welcome back, ${user.fullName || 'Student'}! Logged in successfully.`);
-      navigate('/', { replace: true });
+      showToast(`Welcome back, ${user.fullName || 'User'}! Logged in successfully.`);
+      if (user?.role === 'admin' || user?.role === 'super_admin') {
+        navigate('/admin/dashboard', { replace: true });
+      } else {
+        navigate('/dashboard', { replace: true });
+      }
     } catch (err) {
       setNotice({
         type: 'error',
@@ -71,8 +75,7 @@ export default function Login() {
     <AuthLayout
       title="Welcome Back"
       subtitle="Enter your credentials to access your Student Dashboard & Courses"
-      badgeText="STUDENT PORTAL LOGIN"
-      leftTagline="Accelerate Your Tech Journey with Netcradus"
+      singleCard={true}
     >
       {notice && (
         <div
@@ -141,7 +144,7 @@ export default function Login() {
         <div
           style={{
             display: 'flex',
-            justify: 'space-between',
+            justifyContent: 'space-between',
             alignItems: 'center',
             marginBottom: '22px',
             fontSize: '0.85rem',
@@ -167,7 +170,7 @@ export default function Login() {
         </div>
 
         {/* Submit Button */}
-        <button type="submit" className="btn btn-cyan btn-block" disabled={submitting}>
+        <button type="submit" className="btn btn-login-submit" disabled={submitting}>
           {submitting ? (
             <span>
               <i className="fa-solid fa-spinner fa-spin" style={{ marginRight: '8px' }}></i> VERIFYING...
