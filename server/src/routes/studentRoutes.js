@@ -21,5 +21,25 @@ router.get('/dashboard', studentController.getStudentDashboard);
  */
 router.get('/enrollments', studentController.getStudentEnrollments);
 
-module.exports = router;
+/**
+ * @desc    Mark a lesson as complete
+ * @route   POST /api/v1/student/lessons/:lessonId/complete
+ * @access  Private (Authenticated Student)
+ */
+router.post('/lessons/:lessonId/complete', studentController.markLessonComplete);
 
+/**
+ * @desc    Get course progress breakdown
+ * @route   GET /api/v1/student/courses/:courseId/progress
+ * @access  Private (Authenticated Student)
+ */
+router.get('/courses/:courseId/progress', studentController.getCourseProgress);
+
+/**
+ * @desc    Update last accessed lesson for a course
+ * @route   POST /api/v1/student/courses/:courseId/last-accessed
+ * @access  Private (Authenticated Student)
+ */
+router.post('/courses/:courseId/last-accessed', studentController.updateLastAccessed);
+
+module.exports = router;

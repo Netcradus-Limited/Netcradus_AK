@@ -6,6 +6,8 @@ require('dotenv').config({ path: path.join(__dirname, '../../.env') });
 const User = require('../models/User');
 const Course = require('../models/Course');
 const Enrollment = require('../models/Enrollment');
+const Module = require('../models/Module');
+const Lesson = require('../models/Lesson');
 
 function request(options, postData) {
   return new Promise((resolve, reject) => {
@@ -32,7 +34,10 @@ function request(options, postData) {
     await mongoose.connect(process.env.MONGODB_URI);
 
     console.log('=== TEST 1: Public Curriculum API (Guest/Public) ===');
-    const pubCurriculum = await request({ host: 'localhost', port: 5001, path: '/api/v1/courses/cyber/curriculum', method: 'GET' });
+    let pubCurriculum = await request({ host: 'localhost', port: 5001, path: '/api/v1/courses/vapt-analyst/curriculum', method: 'GET' });
+    if (pubCurriculum.statusCode === 404) {
+      pubCurriculum = await request({ host: 'localhost', port: 5001, path: '/api/v1/courses/cyber/curriculum', method: 'GET' });
+    }
     console.log('Public Curriculum Status:', pubCurriculum.statusCode, 'Course:', pubCurriculum.body.data?.course?.title);
     
     const modules = pubCurriculum.body.data?.curriculum || [];
@@ -61,9 +66,9 @@ function request(options, postData) {
     const lockedGuestRes = await request({ host: 'localhost', port: 5001, path: '/api/v1/lectures/' + lockedLecId, method: 'GET' });
     console.log('Guest Locked Lecture Status:', lockedGuestRes.statusCode, 'Msg:', lockedGuestRes.body.message);
 
-    // Setup student enrollment in 'cyber' course for test 5 & 6
+    // Setup student enrollment in 'vapt-analyst' / 'cyber' course for test 5 & 6
     const studentUser = await User.findOne({ email: 'student@netcradus.com' });
-    const cyberCourse = await Course.findOne({ slug: 'cyber' });
+    const cyberCourse = await Course.findOne({ slug: { $in: ['vapt-analyst', 'cyber'] } });
     
     let cyberEnrollment = await Enrollment.findOne({ userId: studentUser._id, courseId: cyberCourse._id });
     if (!cyberEnrollment) {
@@ -93,7 +98,7 @@ function request(options, postData) {
     });
     console.log('Enrolled Student Locked Lecture Status:', studentLockedRes.statusCode, 'Title:', studentLockedRes.body.data?.title, 'VideoURL Present:', !!studentLockedRes.body.data?.video);
 
-    const aiCourse = await Course.findOne({ slug: 'ai' });
+    const aiCourse = await Course.findOne({ slug: { $in: ['ai-ml', 'ai'] } });
     const aiModule = await mongoose.model('Module').findOne({ courseId: aiCourse._id });
     const aiLockedLesson = await mongoose.model('Lesson').findOne({ moduleId: aiModule._id, preview: false });
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { academyService } from '../services/academyService';
 import { studentService } from '../services/studentService';
 import { useAuth } from '../context/AuthContext';
@@ -7,6 +7,7 @@ import { useApp } from '../App';
 
 export default function Learn() {
   const { courseId } = useParams();
+  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
   const { showToast } = useApp();
@@ -14,6 +15,10 @@ export default function Learn() {
   const [curriculumData, setCurriculumData] = useState(null);
   const [activeLectureId, setActiveLectureId] = useState(null);
   const [activeLecture, setActiveLecture] = useState(null);
+
+  const [completedLessonIds, setCompletedLessonIds] = useState(new Set());
+  const [userProgress, setUserProgress] = useState(null);
+  const [markingComplete, setMarkingComplete] = useState(false);
 
   const [loadingCurriculum, setLoadingCurriculum] = useState(true);
   const [loadingLecture, setLoadingLecture] = useState(false);
@@ -25,7 +30,6 @@ export default function Learn() {
     setLoadingCurriculum(true);
     setError(null);
     try {
-      // Find course details first
       const courses = await academyService.getCourses('all');
       const foundCourse = (courses || []).find(
         (c) => c._id === courseId || c.slug === courseId
@@ -35,11 +39,31 @@ export default function Learn() {
       const data = await academyService.getPublicCurriculum(targetSlug);
       setCurriculumData(data);
 
-      // Automatically select first available lecture
-      const firstModule = data.curriculum && data.curriculum[0];
-      const firstLesson = firstModule && firstModule.lessons && firstModule.lessons[0];
-      if (firstLesson) {
-        setActiveLectureId(firstLesson._id);
+      if (data.userProgress) {
+        setUserProgress(data.userProgress);
+      }
+
+      // Collect completed lesson IDs from curriculum lessons
+      const completedSet = new Set();
+      (data.curriculum || []).forEach((mod) => {
+        (mod.lessons || []).forEach((les) => {
+          if (les.isCompleted) completedSet.add(les._id);
+        });
+      });
+      setCompletedLessonIds(completedSet);
+
+      // Resolve initial active lecture: query param ?lesson= -> continue target -> first lesson
+      const paramLessonId = searchParams.get('lesson');
+      if (paramLessonId) {
+        setActiveLectureId(paramLessonId);
+      } else if (data.userProgress && data.userProgress.continueLessonId) {
+        setActiveLectureId(data.userProgress.continueLessonId);
+      } else {
+        const firstModule = data.curriculum && data.curriculum[0];
+        const firstLesson = firstModule && firstModule.lessons && firstModule.lessons[0];
+        if (firstLesson) {
+          setActiveLectureId(firstLesson._id);
+        }
       }
     } catch (err) {
       console.error('[Learn] Error loading course curriculum:', err);
@@ -63,6 +87,11 @@ export default function Learn() {
     try {
       const data = await studentService.getLectureContent(lectureId);
       setActiveLecture(data);
+
+      // Update last accessed lesson on backend if authenticated student
+      if (isAuthenticated && user?.role === 'student' && courseId) {
+        studentService.updateLastAccessed(courseId, lectureId).catch(() => {});
+      }
     } catch (err) {
       console.error('[Learn] Lecture Content Error:', err);
       setActiveLecture(null);
@@ -77,6 +106,46 @@ export default function Learn() {
       fetchLectureContent(activeLectureId);
     }
   }, [activeLectureId]);
+
+  // 3. Handle Mark Lecture as Complete
+  const handleMarkComplete = async () => {
+    if (!activeLectureId || markingComplete) return;
+
+    if (!isAuthenticated) {
+      showToast('Please log in to track your learning progress.');
+      navigate('/login');
+      return;
+    }
+
+    setMarkingComplete(true);
+    try {
+      const result = await studentService.markLessonComplete(activeLectureId);
+      showToast('Lesson marked as complete! 🎉');
+
+      // Update local completed set
+      setCompletedLessonIds((prev) => new Set([...prev, activeLectureId]));
+
+      // Update user progress summary
+      setUserProgress((prev) => ({
+        ...prev,
+        completedLessonsCount: result.completedLessonsCount,
+        totalLessons: result.totalLessons,
+        progressPercentage: result.progressPercentage,
+        status: result.status,
+        continueLessonId: result.continueLessonId,
+      }));
+
+      // Auto-advance to next lesson if available
+      if (result.continueLessonId && result.continueLessonId !== activeLectureId) {
+        setActiveLectureId(result.continueLessonId);
+      }
+    } catch (err) {
+      console.error('[Learn] Mark Complete Error:', err);
+      showToast(err.message || 'Failed to mark lesson complete.');
+    } finally {
+      setMarkingComplete(false);
+    }
+  };
 
   if (loadingCurriculum) {
     return (
@@ -103,11 +172,13 @@ export default function Learn() {
   }
 
   const { course, curriculum } = curriculumData;
+  const isCurrentLessonCompleted = activeLectureId && completedLessonIds.has(activeLectureId);
+  const isCourse100Completed = userProgress && userProgress.progressPercentage === 100;
 
   return (
     <div className="learn-page" style={{ background: 'var(--bg-dark)', minHeight: 'calc(100vh - 80px)' }}>
-      {/* TOP LEARNING HEADER */}
-      <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-glow)', padding: '16px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+      {/* TOP LEARNING HEADER & PROGRESS BAR */}
+      <div style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-glow)', padding: '14px 30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
           <Link to="/my-courses" className="btn btn-sm btn-outline-cyan">
             <i className="fa-solid fa-arrow-left"></i> My Courses
@@ -116,15 +187,36 @@ export default function Learn() {
             {course.title}
           </h2>
         </div>
-        <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.12)', color: 'var(--cyan-primary)', fontSize: '0.8rem', border: '1px solid var(--border-glow)' }}>
-          ACADEMY LEARNING PORTAL
-        </span>
+
+        {userProgress && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+            <div style={{ textAlign: 'right' }}>
+              <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>
+                Course Progress: <strong style={{ color: 'var(--cyan-primary)' }}>{userProgress.progressPercentage}%</strong>
+              </div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                {userProgress.completedLessonsCount} / {userProgress.totalLessons} Lessons
+              </div>
+            </div>
+            <div style={{ width: '120px', height: '8px', background: 'var(--bg-dark)', borderRadius: '4px', overflow: 'hidden', border: '1px solid var(--border-subtle)' }}>
+              <div style={{ width: `${userProgress.progressPercentage}%`, height: '100%', background: 'var(--cyan-primary)', transition: 'var(--transition)' }}></div>
+            </div>
+          </div>
+        )}
       </div>
+
+      {/* 100% COURSE COMPLETION BANNER */}
+      {isCourse100Completed && (
+        <div style={{ background: 'rgba(46, 213, 115, 0.12)', borderBottom: '1px solid rgba(46, 213, 115, 0.3)', padding: '12px 30px', color: '#2ed573', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 'bold' }}>
+          <i className="fa-solid fa-graduation-cap" style={{ fontSize: '1.2rem' }}></i>
+          Congratulations! You have completed 100% of this course!
+        </div>
+      )}
 
       {/* MAIN TWO-COLUMN LMS LAYOUT */}
       <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', minHeight: 'calc(100vh - 145px)' }}>
         
-        {/* LEFT SIDEBAR: CURRICULUM TREE */}
+        {/* LEFT SIDEBAR: CURRICULUM TREE WITH REAL PROGRESS INDICATORS */}
         <div style={{ background: 'var(--bg-card)', borderRight: '1px solid var(--border-subtle)', padding: '20px', overflowY: 'auto' }}>
           <h4 style={{ color: 'var(--white)', marginBottom: '15px', fontSize: '1.05rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <i className="fa-solid fa-list-check" style={{ color: 'var(--cyan-primary)' }}></i> Course Content
@@ -143,6 +235,8 @@ export default function Learn() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                     {(mod.lessons || []).map((les) => {
                       const isActive = activeLectureId === les._id;
+                      const isCompleted = completedLessonIds.has(les._id);
+
                       return (
                         <button
                           key={les._id}
@@ -153,9 +247,9 @@ export default function Learn() {
                             justifyContent: 'space-between',
                             padding: '10px 12px',
                             borderRadius: 'var(--radius-sm)',
-                            background: isActive ? 'rgba(0, 210, 255, 0.15)' : 'transparent',
+                            background: isActive ? 'rgba(0, 210, 255, 0.15)' : isCompleted ? 'rgba(46, 213, 115, 0.05)' : 'transparent',
                             border: isActive ? '1px solid var(--border-glow)' : '1px solid transparent',
-                            color: isActive ? 'var(--white)' : 'var(--text-muted)',
+                            color: isActive ? 'var(--white)' : isCompleted ? 'var(--text-main)' : 'var(--text-muted)',
                             cursor: 'pointer',
                             textAlign: 'left',
                             fontSize: '0.88rem',
@@ -163,7 +257,13 @@ export default function Learn() {
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
-                            <i className={`fa-solid ${les.type === 'lab_video' ? 'fa-flask' : les.type === 'text' ? 'fa-file-lines' : 'fa-circle-play'}`} style={{ color: isActive ? 'var(--cyan-primary)' : 'inherit' }}></i>
+                            {isCompleted ? (
+                              <i className="fa-solid fa-circle-check" style={{ color: '#2ed573' }}></i>
+                            ) : isActive ? (
+                              <i className="fa-solid fa-play" style={{ color: 'var(--cyan-primary)', fontSize: '0.8rem' }}></i>
+                            ) : (
+                              <i className="fa-regular fa-circle" style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}></i>
+                            )}
                             <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{les.title}</span>
                           </div>
                           {les.isFreePreview ? (
@@ -229,16 +329,42 @@ export default function Learn() {
                 </div>
               )}
 
-              {/* LECTURE TITLE & DETAILS */}
+              {/* LECTURE TITLE, COMPLETION ACTION & DETAILS */}
               <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
-                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px' }}>
-                  <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', border: '1px solid var(--border-glow)', textTransform: 'uppercase' }}>
-                    {activeLecture.type}
-                  </span>
-                  {activeLecture.preview && (
-                    <span style={{ color: '#2ed573', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                      <i className="fa-solid fa-eye"></i> FREE PREVIEW
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                    <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', border: '1px solid var(--border-glow)', textTransform: 'uppercase' }}>
+                      {activeLecture.type}
                     </span>
+                    {activeLecture.preview && (
+                      <span style={{ color: '#2ed573', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                        <i className="fa-solid fa-eye"></i> FREE PREVIEW
+                      </span>
+                    )}
+                  </div>
+
+                  {/* MARK AS COMPLETE / COMPLETED BUTTON */}
+                  {isAuthenticated && user?.role === 'student' && (
+                    <button
+                      onClick={handleMarkComplete}
+                      disabled={isCurrentLessonCompleted || markingComplete}
+                      className={`btn btn-sm ${isCurrentLessonCompleted ? 'btn-outline-green' : 'btn-cyan'}`}
+                      style={{
+                        padding: '8px 16px',
+                        fontSize: '0.88rem',
+                        background: isCurrentLessonCompleted ? 'rgba(46, 213, 115, 0.15)' : undefined,
+                        color: isCurrentLessonCompleted ? '#2ed573' : undefined,
+                        borderColor: isCurrentLessonCompleted ? '#2ed573' : undefined,
+                      }}
+                    >
+                      {markingComplete ? (
+                        <span><i className="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+                      ) : isCurrentLessonCompleted ? (
+                        <span><i className="fa-solid fa-circle-check"></i> Completed</span>
+                      ) : (
+                        <span><i className="fa-regular fa-circle-check"></i> Mark as Complete</span>
+                      )}
+                    </button>
                   )}
                 </div>
 
@@ -299,3 +425,4 @@ export default function Learn() {
     </div>
   );
 }
+

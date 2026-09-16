@@ -4,11 +4,12 @@ const escapeRegex = require('../utils/escapeRegex');
 
 // Category slug/key mapping to DB category values
 const categoryMap = {
-  cyber: 'CYBER SECURITY',
-  ai: 'ARTIFICIAL INTELLIGENCE',
-  cloud: 'CLOUD COMPUTING',
-  data: 'DATA SCIENCE',
-  fullstack: 'FULL STACK DEVELOPMENT',
+  cyber: 'Cyber Security',
+  cloud: 'Cloud',
+  aiml: 'AI/ML',
+  ai: 'AI/ML',
+  linux: 'Linux',
+  networking: 'Networking',
 };
 
 /**
@@ -24,9 +25,13 @@ const getCourses = asyncHandler(async (req, res, next) => {
     const rawCategory = req.query.category.toLowerCase().trim();
     const mappedCategory = categoryMap[rawCategory] || req.query.category.trim();
     const safeCategory = escapeRegex(mappedCategory);
+    const categoryRegex = new RegExp(`^${safeCategory}$`, 'i');
 
-    // Perform case-insensitive match for flexibility
-    query.category = { $regex: new RegExp(`^${safeCategory}$`, 'i') };
+    // Perform case-insensitive match on category or tags for multi-category inclusion
+    query.$or = [
+      { category: categoryRegex },
+      { tags: categoryRegex }
+    ];
   }
 
   // Parse optional search query safely (escaping regex special characters)

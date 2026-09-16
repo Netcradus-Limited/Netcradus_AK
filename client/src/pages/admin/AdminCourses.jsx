@@ -152,11 +152,11 @@ export default function AdminCourses() {
             onChange={(e) => setCategoryFilter(e.target.value)}
           >
             <option value="all">All Categories</option>
-            <option value="cyber">CYBER SECURITY</option>
-            <option value="ai">ARTIFICIAL INTELLIGENCE</option>
-            <option value="cloud">CLOUD COMPUTING</option>
-            <option value="data">DATA SCIENCE</option>
-            <option value="fullstack">FULL STACK DEVELOPMENT</option>
+            <option value="cyber">Cyber Security</option>
+            <option value="cloud">Cloud</option>
+            <option value="aiml">AI/ML</option>
+            <option value="linux">Linux</option>
+            <option value="networking">Networking</option>
           </select>
         </div>
 
@@ -311,11 +311,11 @@ export default function AdminCourses() {
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
-                    <option value="CYBER SECURITY">CYBER SECURITY</option>
-                    <option value="ARTIFICIAL INTELLIGENCE">ARTIFICIAL INTELLIGENCE</option>
-                    <option value="CLOUD COMPUTING">CLOUD COMPUTING</option>
-                    <option value="DATA SCIENCE">DATA SCIENCE</option>
-                    <option value="FULL STACK DEVELOPMENT">FULL STACK DEVELOPMENT</option>
+                    <option value="Cyber Security">Cyber Security</option>
+                    <option value="Cloud">Cloud</option>
+                    <option value="AI/ML">AI/ML</option>
+                    <option value="Linux">Linux</option>
+                    <option value="Networking">Networking</option>
                   </select>
                 </div>
               </div>

@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../App';
+import { useAuth } from '../context/AuthContext';
 import { courseData as fallbackCourseData } from '../data/coursesData';
 import { academyService } from '../services/academyService';
 
@@ -15,6 +16,8 @@ export default function Modals() {
     showToast,
     courses,
   } = useApp();
+
+  const { user } = useAuth();
 
   // Dynamic Course Lookup (from API courses or fallback dictionary)
   const apiCourse = courses.find((c) => c.slug === selectedCourseKey);
@@ -38,6 +41,22 @@ export default function Modals() {
   const [enrollForm, setEnrollForm] = useState({ fullName: '', email: '', phone: '' });
   const [enrollSubmitting, setEnrollSubmitting] = useState(false);
   const [enrollError, setEnrollError] = useState('');
+
+  // Auto-prefill authenticated user details & course selection
+  useEffect(() => {
+    if (activeModal === 'enroll') {
+      if (user) {
+        setEnrollForm((prev) => ({
+          fullName: user.fullName || user.name || prev.fullName,
+          email: user.email || prev.email,
+          phone: user.phone || prev.phone,
+        }));
+      }
+      if (!enrollCourseName && courses && courses.length > 0) {
+        setEnrollCourseName(courses[0].title);
+      }
+    }
+  }, [activeModal, user, courses, enrollCourseName, setEnrollCourseName]);
 
   // Quick Enquiry Form State
   const [enquireForm, setEnquireForm] = useState({ fullName: '', email: '', phone: '', interestedCourse: '' });
@@ -200,22 +219,11 @@ export default function Modals() {
                 required
               >
                 <option value="" disabled>-- Select a Course or Track --</option>
-                <optgroup label="Cyber Security & Defense">
-                  <option value="Ethical Hacking & VAPT Professional Program">Ethical Hacking & VAPT</option>
-                  <option value="SOC Analyst & Incident Response Specialist">SOC Analyst & Network Defense</option>
-                </optgroup>
-                <optgroup label="Artificial Intelligence & Data">
-                  <option value="Artificial Intelligence & ML with Generative AI">AI & Machine Learning With Generative AI</option>
-                  <option value="Data Analytics & Visualization Masterclass">Data Analytics & Visualization</option>
-                </optgroup>
-                <optgroup label="Cloud & Software Development">
-                  <option value="AWS, Azure & Google Cloud Masterclass">AWS, Azure & Google Cloud Architecture</option>
-                  <option value="Full Stack MERN & Next.js Development">MERN Stack Development</option>
-                </optgroup>
-                <optgroup label="Corporate & Industry Projects">
-                  <option value="Corporate Tech Upskilling Program">Corporate Tech Upskilling Program</option>
-                  <option value="Netcradus Live Industry Projects">Netcradus Live Industry Projects</option>
-                </optgroup>
+                {(courses || []).map((c) => (
+                  <option key={c._id || c.slug} value={c.title}>
+                    {c.title}
+                  </option>
+                ))}
               </select>
             </div>
 

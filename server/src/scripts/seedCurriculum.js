@@ -155,7 +155,13 @@ const seedCurriculum = async () => {
     await connectDB();
 
     for (const item of curriculumSeedData) {
-      const course = await Course.findOne({ slug: item.courseSlug });
+      const legacyMap = {
+        'cyber': ['vapt-analyst', 'cyber'],
+        'ai': ['ai-ml', 'ai'],
+      };
+      const slugsToTry = legacyMap[item.courseSlug] || [item.courseSlug];
+
+      const course = await Course.findOne({ slug: { $in: slugsToTry } });
       if (!course) {
         console.warn(`[SeedCurriculum] Course '${item.courseSlug}' not found. Skipping...`);
         continue;

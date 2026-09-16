@@ -35,16 +35,45 @@ app.use(cookieParser());
 // 5. Data sanitization to protect against MongoDB Query Injections
 app.use(mongoSanitize());
 
-// 6. Global Request Rate Limiter (100 requests per 15 minutes)
-const limiter = rateLimit({
-  max: 100,
-  windowMs: 15 * 60 * 1000,
+// 6. Targeted Rate Limiters
+// Auth Limiter: Protects sensitive authentication routes against brute-force attacks
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'test' ? 1000 : 50, // 50 attempts per 15 min
   message: {
     success: false,
-    message: 'Too many requests from this IP, please try again in 15 minutes.'
-  }
+    message: 'Too many authentication attempts from this IP, please try again in 15 minutes.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
 });
-app.use('/api', limiter);
+
+// Public Course Catalog Limiter: High capacity for public catalog & curriculum browsing
+const publicLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: process.env.NODE_ENV === 'test' ? 5000 : 2000, // 2000 requests per 15 min for normal browsing
+  message: {
+    success: false,
+    message: 'Too many requests to public courses catalog, please try again shortly.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// General API Limiter: General protection for other application endpoints
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: process.env.NODE_ENV === 'test' ? 5000 : 1000,
+  message: {
+    success: false,
+    message: 'Too many requests from this IP, please try again later.'
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply general API rate limiter
+app.use('/api', apiLimiter);
 
 // Import API Routers
 const authRoutes = require('./routes/authRoutes');
@@ -65,8 +94,8 @@ app.get('/api/v1/health', (req, res) => {
 });
 
 // 8. Mount Academy API Routers
-app.use('/api/v1/auth', authRoutes);
-app.use('/api/v1/courses', courseRoutes);
+app.use('/api/v1/auth', authLimiter, authRoutes);
+app.use('/api/v1/courses', publicLimiter, courseRoutes);
 app.use('/api/v1/enrollments', enrollmentRoutes);
 app.use('/api/v1/inquiries', inquiryRoutes);
 app.use('/api/v1/admin', adminRoutes);

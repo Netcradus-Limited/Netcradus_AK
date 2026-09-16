@@ -13,18 +13,21 @@ export default function Courses() {
   } = useApp();
 
   const categoryMap = {
-    cyber: 'CYBER SECURITY',
-    ai: 'ARTIFICIAL INTELLIGENCE',
-    cloud: 'CLOUD COMPUTING',
-    data: 'DATA SCIENCE',
-    fullstack: 'FULL STACK DEVELOPMENT',
+    cyber: 'Cyber Security',
+    cloud: 'Cloud',
+    aiml: 'AI/ML',
+    linux: 'Linux',
+    networking: 'Networking',
   };
 
   const filteredCourses = activeCategory === 'all'
     ? courses
     : courses.filter((c) => {
         const targetCategory = categoryMap[activeCategory];
-        return c.category === targetCategory || c.slug === activeCategory;
+        if (!targetCategory) return true;
+        const matchesCategory = (c.category || '').toLowerCase() === targetCategory.toLowerCase();
+        const matchesTag = Array.isArray(c.tags) && c.tags.some((t) => t.toLowerCase() === targetCategory.toLowerCase());
+        return matchesCategory || matchesTag || c.slug === activeCategory;
       });
 
   return (
@@ -58,28 +61,28 @@ export default function Courses() {
               Cyber Security
             </button>
             <button
-              className={`tab-btn ${activeCategory === 'ai' ? 'active' : ''}`}
-              onClick={() => setActiveCategory('ai')}
-            >
-              Artificial Intelligence
-            </button>
-            <button
               className={`tab-btn ${activeCategory === 'cloud' ? 'active' : ''}`}
               onClick={() => setActiveCategory('cloud')}
             >
-              Cloud Computing
+              Cloud
             </button>
             <button
-              className={`tab-btn ${activeCategory === 'data' ? 'active' : ''}`}
-              onClick={() => setActiveCategory('data')}
+              className={`tab-btn ${activeCategory === 'aiml' ? 'active' : ''}`}
+              onClick={() => setActiveCategory('aiml')}
             >
-              Data Science
+              AI/ML
             </button>
             <button
-              className={`tab-btn ${activeCategory === 'fullstack' ? 'active' : ''}`}
-              onClick={() => setActiveCategory('fullstack')}
+              className={`tab-btn ${activeCategory === 'linux' ? 'active' : ''}`}
+              onClick={() => setActiveCategory('linux')}
             >
-              Full Stack
+              Linux
+            </button>
+            <button
+              className={`tab-btn ${activeCategory === 'networking' ? 'active' : ''}`}
+              onClick={() => setActiveCategory('networking')}
+            >
+              Networking
             </button>
           </div>
 
@@ -135,7 +138,7 @@ export default function Courses() {
                     <div className="banner-overlay"></div>
                     <div className="course-badge">{c.category}</div>
                     <div className="banner-icon"><i className={c.bannerIcon || 'fa-solid fa-user-secret'}></i></div>
-                    <h3 className="banner-title">{c.title.split(' ')[0]} {c.title.split(' ')[1]}</h3>
+                    <h3 className="banner-title">{c.title}</h3>
                   </div>
                   <div className="course-content">
                     <h4 className="course-subtitle">{c.shortDescription || c.title}</h4>

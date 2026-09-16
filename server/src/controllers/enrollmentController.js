@@ -9,7 +9,7 @@ const escapeRegex = require('../utils/escapeRegex');
 /**
  * @desc    Submit an Academy course enrollment application
  * @route   POST /api/v1/enrollments
- * @access  Public
+ * @access  Public / Student
  */
 const createEnrollment = asyncHandler(async (req, res, next) => {
   // 1. Validate incoming request body via Joi
@@ -35,12 +35,10 @@ const createEnrollment = asyncHandler(async (req, res, next) => {
     const searchSlug = (courseSlug || '').trim().toLowerCase();
     const searchName = (courseName || '').trim();
 
-    // Direct slug match
     if (searchSlug) {
       targetCourse = await Course.findOne({ slug: searchSlug, published: true });
     }
 
-    // Safe regex title / shortDescription match
     if (!targetCourse && searchName) {
       const safeName = escapeRegex(searchName);
       targetCourse = await Course.findOne({
@@ -61,21 +59,32 @@ const createEnrollment = asyncHandler(async (req, res, next) => {
     });
   }
 
-  // 3. Find or create guest student User record
-  const lowerEmail = email.toLowerCase().trim();
-  let user = await User.findOne({ email: lowerEmail });
+  // 3. Resolve target User identity (Priority: Authenticated Session -> Email Lookup -> New Guest Account)
+  let user = null;
 
-  if (!user) {
-    user = await User.create({
-      email: lowerEmail,
-      fullName: fullName.trim(),
-      phone: phone.trim(),
-      role: 'student',
-      status: 'active',
-    });
+  if (req.user) {
+    // Authenticated student session: ALWAYS derive userId directly from JWT (req.user)
+    user = req.user;
+  } else {
+    // Unauthenticated guest user
+    const lowerEmail = email.toLowerCase().trim();
+    user = await User.findOne({ email: lowerEmail });
+
+    if (!user) {
+      // Generate a secure random password for guest account creation so Mongoose validation passes cleanly
+      const tempPassword = `GuestPass_${Math.random().toString(36).slice(-8)}${Date.now()}`;
+      user = await User.create({
+        email: lowerEmail,
+        fullName: fullName.trim(),
+        phone: phone ? phone.trim() : '',
+        password: tempPassword,
+        role: 'student',
+        status: 'active',
+      });
+    }
   }
 
-  // 4. Duplicate protection check (check existing active enrollment)
+  // 4. Duplicate enrollment check (check if enrollment already exists for this user and course)
   const existingEnrollment = await Enrollment.findOne({
     userId: user._id,
     courseId: targetCourse._id,
@@ -85,11 +94,11 @@ const createEnrollment = asyncHandler(async (req, res, next) => {
   if (existingEnrollment) {
     return res.status(400).json({
       success: false,
-      message: `An active enrollment application already exists for '${targetCourse.title}' under this email address.`,
+      message: `You are already enrolled in '${targetCourse.title}'.`,
     });
   }
 
-  // 5. Create new Enrollment record
+  // 5. Create new Enrollment record using existing Enrollment model
   const enrollment = await Enrollment.create({
     userId: user._id,
     courseId: targetCourse._id,
@@ -101,7 +110,7 @@ const createEnrollment = asyncHandler(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: `Enrollment submitted successfully for ${targetCourse.title}! Our team will contact you within 2 hours.`,
+    message: `Enrollment submitted successfully for ${targetCourse.title}!`,
     data: {
       enrollmentId: enrollment._id,
       courseTitle: targetCourse.title,

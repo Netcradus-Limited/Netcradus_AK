@@ -24,11 +24,55 @@ exports.getPublicCurriculum = asyncHandler(async (req, res) => {
 
   // Fetch published modules sorted by order
   const modules = await Module.find({ courseId: course._id, published: true }).sort({ order: 1 });
-
   const moduleIds = modules.map((m) => m._id);
 
   // Fetch published lessons sorted by order
   const lessons = await Lesson.find({ moduleId: { $in: moduleIds }, published: true }).sort({ order: 1 });
+
+  // Optional: Check student enrollment & completion if authenticated
+  let userCompletedSet = new Set();
+  let userProgress = null;
+
+  if (req.user) {
+    const enrollment = await Enrollment.findOne({
+      userId: req.user._id,
+      courseId: course._id,
+      status: { $in: ['active', 'completed'] },
+    });
+
+    if (enrollment) {
+      const validLessonIdStrings = lessons.map((l) => l._id.toString());
+      const rawCompletedStrings = (enrollment.completedLessons || []).map((id) => id.toString());
+      userCompletedSet = new Set(rawCompletedStrings.filter((idStr) => validLessonIdStrings.includes(idStr)));
+
+      const totalLessons = lessons.length;
+      const completedCount = userCompletedSet.size;
+      const progressPercentage = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+
+      let continueLessonId = null;
+      if (enrollment.lastAccessedLesson && validLessonIdStrings.includes(enrollment.lastAccessedLesson.toString()) && !userCompletedSet.has(enrollment.lastAccessedLesson.toString())) {
+        continueLessonId = enrollment.lastAccessedLesson.toString();
+      }
+      if (!continueLessonId) {
+        const firstIncomplete = lessons.find((l) => !userCompletedSet.has(l._id.toString()));
+        if (firstIncomplete) {
+          continueLessonId = firstIncomplete._id.toString();
+        } else if (lessons.length > 0) {
+          continueLessonId = enrollment.lastAccessedLesson ? enrollment.lastAccessedLesson.toString() : lessons[lessons.length - 1]._id.toString();
+        }
+      }
+
+      userProgress = {
+        enrollmentId: enrollment._id,
+        status: enrollment.status,
+        totalLessons,
+        completedLessonsCount: completedCount,
+        progressPercentage,
+        lastAccessedLesson: enrollment.lastAccessedLesson ? enrollment.lastAccessedLesson.toString() : null,
+        continueLessonId,
+      };
+    }
+  }
 
   // Group lessons under their parent module & strip protected data for locked lessons
   const curriculum = modules.map((mod) => {
@@ -36,6 +80,8 @@ exports.getPublicCurriculum = asyncHandler(async (req, res) => {
       .filter((l) => l.moduleId.toString() === mod._id.toString())
       .map((les) => {
         const isFreePreview = les.preview === true;
+        const isCompleted = userCompletedSet.has(les._id.toString());
+
         return {
           _id: les._id,
           moduleId: les.moduleId,
@@ -48,6 +94,7 @@ exports.getPublicCurriculum = asyncHandler(async (req, res) => {
           order: les.order,
           isFreePreview,
           isLocked: !isFreePreview,
+          isCompleted,
           published: les.published,
           // Security: Only include video URL if free preview; otherwise omit completely
           videoUrl: isFreePreview ? les.video : undefined,
@@ -74,10 +121,12 @@ exports.getPublicCurriculum = asyncHandler(async (req, res) => {
         category: course.category,
         level: course.level,
       },
+      userProgress,
       curriculum,
     },
   });
 });
+
 
 /**
  * @desc    Get secure lecture content (verifies Free Preview OR active enrollment)

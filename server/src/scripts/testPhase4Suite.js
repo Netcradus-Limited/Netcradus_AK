@@ -103,7 +103,7 @@ async function runPhase4Tests() {
     results.test7 = isTest7Pass ? 'PASS' : 'FAIL';
 
     // TEST 8 & 9: Admin -> Student Data Synchronization Test
-    // Create a temporary course, enroll the student, update enrollment status by Admin, verify Student sees update
+    // Create a temporary course (published: false), enroll the student, update enrollment status by Admin, verify Student sees update
     const testSlug = `sync-course-${Date.now()}`;
     const newCourseRes = await makeRequest('POST', '/admin/courses', {
       title: 'Sync Verification Course',
@@ -111,7 +111,7 @@ async function runPhase4Tests() {
       category: 'CYBER SECURITY',
       level: 'Intermediate',
       price: 99900,
-      published: true,
+      published: false,
     }, adminCookie);
 
     let isTest8_9Pass = false;
@@ -139,10 +139,10 @@ async function runPhase4Tests() {
         if (updatedItem && updatedItem.status === 'completed') {
           isTest8_9Pass = true;
         }
-
-        // Cleanup test course
-        await makeRequest('DELETE', `/admin/courses/${courseId}`, null, adminCookie);
       }
+
+      // Cleanup test course unconditionally
+      await makeRequest('DELETE', `/admin/courses/${courseId}`, null, adminCookie);
     }
     console.log(`[TEST 8 & 9] Admin → Student Data Sync (Enrollment & Course Updates): ${isTest8_9Pass ? 'PASS' : 'FAIL'}`);
     results.test8_9 = isTest8_9Pass ? 'PASS' : 'FAIL';

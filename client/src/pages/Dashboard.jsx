@@ -217,20 +217,25 @@ export default function Dashboard() {
                               {item.enrollmentType && <div><i className="fa-solid fa-tag"></i> Type: <strong style={{ textTransform: 'uppercase' }}>{item.enrollmentType}</strong></div>}
                             </div>
 
-                            {/* Progress bar */}
+                            {/* Progress bar & Lesson Counter */}
                             <div style={{ marginBottom: '18px' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                                <span>Course Progress</span>
-                                <strong>{item.progressPercentage || 0}%</strong>
+                                <span>{item.completedLessonsCount !== undefined ? `${item.completedLessonsCount} / ${item.totalLessons} Lessons Completed` : 'Course Progress'}</span>
+                                <strong style={{ color: item.progressPercentage === 100 ? '#2ed573' : 'var(--cyan-primary)' }}>{item.progressPercentage || 0}%</strong>
                               </div>
                               <div style={{ height: '6px', background: 'var(--bg-dark)', borderRadius: '3px', overflow: 'hidden' }}>
-                                <div style={{ width: `${item.progressPercentage || 0}%`, height: '100%', background: 'var(--cyan-primary)', transition: 'var(--transition)' }}></div>
+                                <div style={{ width: `${item.progressPercentage || 0}%`, height: '100%', background: item.progressPercentage === 100 ? '#2ed573' : 'var(--cyan-primary)', transition: 'var(--transition)' }}></div>
                               </div>
                             </div>
 
                             <div style={{ display: 'flex', gap: '10px' }}>
-                              <Link to={`/learn/${course._id || course.slug}`} className="btn btn-sm btn-cyan" style={{ flex: 1, textAlign: 'center' }}>
-                                <i className="fa-solid fa-circle-play"></i> Access Course
+                              <Link
+                                to={`/learn/${course._id || course.slug}${item.continueLessonId ? `?lesson=${item.continueLessonId}` : ''}`}
+                                className={`btn btn-sm ${item.progressPercentage === 100 ? 'btn-outline-green' : 'btn-cyan'}`}
+                                style={{ flex: 1, textAlign: 'center', borderColor: item.progressPercentage === 100 ? '#2ed573' : undefined, color: item.progressPercentage === 100 ? '#2ed573' : undefined }}
+                              >
+                                <i className={`fa-solid ${item.progressPercentage === 100 ? 'fa-circle-check' : 'fa-circle-play'}`}></i>{' '}
+                                {item.progressPercentage === 100 ? 'Review Course' : 'Continue Learning'}
                               </Link>
                               <button type="button" className="btn btn-sm btn-outline-cyan" onClick={() => showToast(`Course info: ${course.title}`)}>
                                 <i className="fa-solid fa-circle-info"></i> Details
@@ -242,6 +247,7 @@ export default function Dashboard() {
                     </div>
                   )}
                 </div>
+
 
                 {/* Tab 2: Assignments (Standard Learning Support) */}
                 <div className={`dash-panel ${activeTab === 'assignments' ? 'active' : ''}`}>

@@ -196,15 +196,15 @@ export default function MyCourses() {
                       {/* Course Progress */}
                       <div style={{ marginBottom: '20px' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px' }}>
-                          <span>Course Progress</span>
-                          <strong>{item.progressPercentage || 0}%</strong>
+                          <span>{item.completedLessonsCount !== undefined ? `${item.completedLessonsCount} / ${item.totalLessons} Lessons Completed` : 'Course Progress'}</span>
+                          <strong style={{ color: item.progressPercentage === 100 ? '#2ed573' : 'var(--cyan-primary)' }}>{item.progressPercentage || 0}%</strong>
                         </div>
                         <div style={{ height: '6px', background: 'var(--bg-dark)', borderRadius: '3px', overflow: 'hidden' }}>
                           <div
                             style={{
                               width: `${item.progressPercentage || 0}%`,
                               height: '100%',
-                              background: 'var(--cyan-primary)',
+                              background: item.progressPercentage === 100 ? '#2ed573' : 'var(--cyan-primary)',
                               transition: 'var(--transition)',
                             }}
                           ></div>
@@ -213,11 +213,12 @@ export default function MyCourses() {
 
                       <div style={{ display: 'flex', gap: '10px' }}>
                         <Link
-                          to={`/learn/${course._id || course.slug}`}
-                          className="btn btn-sm btn-cyan"
-                          style={{ flex: 1, textAlign: 'center' }}
+                          to={`/learn/${course._id || course.slug}${item.continueLessonId ? `?lesson=${item.continueLessonId}` : ''}`}
+                          className={`btn btn-sm ${item.progressPercentage === 100 ? 'btn-outline-green' : 'btn-cyan'}`}
+                          style={{ flex: 1, textAlign: 'center', borderColor: item.progressPercentage === 100 ? '#2ed573' : undefined, color: item.progressPercentage === 100 ? '#2ed573' : undefined }}
                         >
-                          <i className="fa-solid fa-circle-play"></i> Continue Learning
+                          <i className={`fa-solid ${item.progressPercentage === 100 ? 'fa-circle-check' : 'fa-circle-play'}`}></i>{' '}
+                          {item.progressPercentage === 100 ? 'Completed' : 'Continue Learning'}
                         </Link>
                         <button
                           type="button"
@@ -227,6 +228,7 @@ export default function MyCourses() {
                           <i className="fa-solid fa-circle-info"></i> Info
                         </button>
                       </div>
+
                     </div>
                   </div>
                 );

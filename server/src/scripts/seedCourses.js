@@ -20,14 +20,28 @@ const seedCourses = async () => {
     let insertedCount = 0;
     let updatedCount = 0;
 
+    const legacySlugMap = {
+      'vapt-analyst': 'cyber',
+      'ai-ml': 'ai',
+      'cloud-engineer': 'cloud',
+      'soc-analyst': 'soc',
+    };
+
     for (const course of coursesSeedData) {
-      // Find course by slug
-      const existingCourse = await Course.findOne({ slug: course.slug });
+      const legacySlug = legacySlugMap[course.slug];
+      
+      // Look for course by current new slug or legacy slug
+      let existingCourse = await Course.findOne({
+        $or: [
+          { slug: course.slug },
+          ...(legacySlug ? [{ slug: legacySlug }] : [])
+        ]
+      });
 
       if (existingCourse) {
-        // Update existing course to match seed data changes
+        // Update existing course document in-place preserving _id
         await Course.updateOne(
-          { slug: course.slug },
+          { _id: existingCourse._id },
           { $set: course }
         );
         updatedCount++;

@@ -1,247 +1,316 @@
 const coursesSeedData = [
   {
-    title: "Ethical Hacking & VAPT Professional Program",
-    slug: "cyber",
-    shortDescription: "Ethical Hacking & VAPT Professional Program",
-    description: "Become a certified security specialist. Master Vulnerability Assessment & Penetration Testing, network security, threat hunting, and security operations center (SOC) architectures through hands-on labs and real-world simulations.",
+    title: "VAPT Analyst",
+    slug: "vapt-analyst",
+    shortDescription: "Vulnerability Assessment & Penetration Testing Analyst Program",
+    description: "Master Vulnerability Assessment & Penetration Testing (VAPT). Conduct security audits, web app vulnerability scanning, network exploitation, and write enterprise audit reports.",
     thumbnail: "/images/cyber.png",
-    category: "CYBER SECURITY",
+    category: "Cyber Security",
     level: "Beginner to Advanced",
-    price: 4999900, // ₹49,999 represented in paise
-    discountPrice: 2999900, // ₹29,999 represented in paise
+    price: 4999900,
+    discountPrice: 2999900,
     currency: "INR",
     duration: "6 Months (240 Hours Live Practical)",
     bannerClass: "cyber-bg",
     bannerIcon: "fa-solid fa-user-secret",
     prereq: "Basic Networking and OS concepts",
-    cert: "Netcradus Certified Ethical Hacker (NCEH) + CEH v12 Prep",
+    cert: "Netcradus Certified VAPT Analyst",
     highlights: [
       "Vulnerability Assessment & Penetration Testing",
       "Network & Web Application Security",
-      "Bug Bounty & SIEM/SOC Tools"
+      "Bug Bounty & Corporate Audit Reports"
     ],
     tools: ["Metasploit", "Wireshark", "Burp Suite Pro", "Nmap", "Kali Linux", "OWASP ZAP"],
-    roles: ["Penetration Tester", "Cyber Security Analyst", "VAPT Engineer", "Security Consultant"],
-    requirements: [
-      "Basic Networking and OS concepts"
-    ],
+    roles: ["VAPT Analyst", "Penetration Tester", "Cyber Security Auditor"],
+    requirements: ["Basic Networking and OS concepts"],
     learningOutcomes: [
-      "Module 1: Information Gathering, Footprinting & Reconnaissance",
-      "Module 2: Network Pentesting, Port Scanning & Vulnerability Analysis",
-      "Module 3: Web Application Pentesting (OWASP Top 10)",
-      "Module 4: System Hacking, Privilege Escalation & Persistence",
-      "Module 5: Wireless Security, Social Engineering & Malware Analysis",
-      "Module 6: Cloud Pentesting & Report Writing for Corporate Audits"
+      "Information Gathering, Footprinting & Reconnaissance",
+      "Network Pentesting & Vulnerability Assessment",
+      "Web Application Pentesting (OWASP Top 10)",
+      "System Hacking, Privilege Escalation & Persistence"
     ],
-    skills: [
-      "Metasploit", "Wireshark", "Burp Suite Pro", "Nmap", "Kali Linux", "OWASP ZAP"
-    ],
-    tags: ["Cyber Security", "VAPT", "Ethical Hacking", "SOC"],
+    skills: ["Metasploit", "Wireshark", "Burp Suite Pro", "Nmap", "Kali Linux", "OWASP ZAP"],
+    tags: ["Cyber Security", "VAPT", "Ethical Hacking"],
     published: true,
     featured: true
   },
   {
-    title: "Artificial Intelligence & ML with Generative AI",
-    slug: "ai",
-    shortDescription: "AI & Machine Learning With Generative AI",
-    description: "Develop cutting-edge models. Master deep learning, computer vision, natural language processing, transformers, and large language models (LLMs) with PyTorch and LangChain.",
-    thumbnail: "/images/ai.png",
-    category: "ARTIFICIAL INTELLIGENCE",
-    level: "Intermediate",
-    price: 5999900, // ₹59,999 in paise
-    discountPrice: 3499900, // ₹34,999 in paise
+    title: "Penetration Testing",
+    slug: "penetration-testing",
+    shortDescription: "Advanced Penetration Testing & Ethical Hacking Program",
+    description: "Deep dive into advanced penetration testing techniques. Master Active Directory hacking, wireless security, privilege escalation, and red team engagement strategies.",
+    thumbnail: "/images/cyber.png",
+    category: "Cyber Security",
+    level: "Intermediate to Advanced",
+    price: 5499900,
+    discountPrice: 3299900,
     currency: "INR",
-    duration: "6 Months (240 Hours Live Coding)",
-    bannerClass: "ai-bg",
-    bannerIcon: "fa-solid fa-brain",
-    prereq: "Python fundamentals & Basic Mathematics",
-    cert: "Netcradus Certified AI & LLM Engineer",
+    duration: "6 Months (240 Hours Hands-on)",
+    bannerClass: "cyber-bg",
+    bannerIcon: "fa-solid fa-bug",
+    prereq: "Linux & Networking fundamentals",
+    cert: "Netcradus Certified Penetration Tester (NCPT)",
     highlights: [
-      "Deep Learning & Computer Vision",
-      "Generative AI, RAG & LangChain",
-      "Model Deployment & MLOps"
+      "Active Directory Pentesting & Exploitation",
+      "Privilege Escalation & Evasion Techniques",
+      "Red Team Operations & Offensive Security"
     ],
-    tools: ["PyTorch", "TensorFlow", "OpenCV", "LangChain", "HuggingFace", "Docker"],
-    roles: ["AI Engineer", "Machine Learning Specialist", "GenAI Developer", "Data Scientist"],
-    requirements: [
-      "Python fundamentals & Basic Mathematics"
-    ],
+    tools: ["Kali Linux", "Metasploit", "Burp Suite", "BloodHound", "Cobalt Strike", "Nmap"],
+    roles: ["Penetration Tester", "Ethical Hacker", "Red Team Specialist"],
+    requirements: ["Linux & Networking fundamentals"],
     learningOutcomes: [
-      "Module 1: Advanced Python, NumPy, Pandas & Data Wrangling",
-      "Module 2: Supervised & Unsupervised Machine Learning Algorithms",
-      "Module 3: Deep Neural Networks & Convolutional Neural Networks (CNN)",
-      "Module 4: Natural Language Processing (NLP) & Transformers",
-      "Module 5: Generative AI, Large Language Models (LLMs) & RAG",
-      "Module 6: Deploying AI Models to AWS SageMaker & FastAPIs"
+      "Network Scanning & Vulnerability Analysis",
+      "Active Directory Hacking & Lateral Movement",
+      "Web & Infrastructure Exploitation",
+      "Wireless & Social Engineering Attacks"
     ],
-    skills: [
-      "PyTorch", "TensorFlow", "OpenCV", "LangChain", "HuggingFace", "Docker"
-    ],
-    tags: ["Artificial Intelligence", "Machine Learning", "Generative AI", "Deep Learning"],
+    skills: ["Kali Linux", "Metasploit", "Burp Suite", "BloodHound", "Nmap"],
+    tags: ["Cyber Security", "Penetration Testing", "Red Teaming"],
     published: true,
     featured: true
   },
   {
-    title: "AWS, Azure & Google Cloud Masterclass",
-    slug: "cloud",
-    shortDescription: "AWS, Azure & Google Cloud Masterclass",
-    description: "Architect secure multi-cloud environments. Prepare for AWS Solutions Architect & Azure Admin certifications with detailed modules on Terraform, Kubernetes, and Ansible.",
-    thumbnail: "/images/cloud.png",
-    category: "CLOUD COMPUTING",
-    level: "Beginner to Pro",
-    price: 3999900, // ₹39,999 in paise
-    discountPrice: 2499900, // ₹24,999 in paise
-    currency: "INR",
-    duration: "5 Months (200 Hours Multi-Cloud)",
-    bannerClass: "cloud-bg",
-    bannerIcon: "fa-solid fa-cloud-arrow-up",
-    prereq: "Basic Linux administration",
-    cert: "AWS Certified Solutions Architect & Azure Admin Prep",
-    highlights: [
-      "AWS Solutions Architect Prep",
-      "Azure Cloud Administration & GCP",
-      "Terraform Infrastructure as Code"
-    ],
-    tools: ["AWS Console", "Azure Portal", "Terraform", "Kubernetes", "Docker", "Ansible"],
-    roles: ["Cloud Solutions Architect", "Cloud Security Engineer", "DevOps Cloud Engineer"],
-    requirements: [
-      "Basic Linux administration"
-    ],
-    learningOutcomes: [
-      "Module 1: Cloud Fundamentals & Virtual Private Cloud (VPC) Setup",
-      "Module 2: AWS EC2, S3, IAM, Lambda & Auto Scaling Architecture",
-      "Module 3: Azure Resource Manager, Active Directory & Cloud Security",
-      "Module 4: Google Cloud Platform Compute & Storage Engine",
-      "Module 5: Infrastructure as Code (IaC) using Terraform",
-      "Module 6: Disaster Recovery, High Availability & Enterprise Migration"
-    ],
-    skills: [
-      "AWS Console", "Azure Portal", "Terraform", "Kubernetes", "Docker", "Ansible"
-    ],
-    tags: ["Cloud Computing", "AWS", "Azure", "GCP", "DevOps", "Terraform"],
-    published: true,
-    featured: true
-  },
-  {
-    title: "Data Analytics & Visualization Masterclass",
-    slug: "data",
-    shortDescription: "Data Analytics & Visualization with Python",
-    description: "Extract insights from raw datasets. Master advanced SQL, Python analytics libraries, and create interactive business intelligence dashboards in PowerBI and Tableau.",
-    thumbnail: "/images/data.png",
-    category: "DATA SCIENCE",
-    level: "Beginner",
-    price: 2999900, // ₹29,999 in paise
-    discountPrice: 1999900, // ₹19,999 in paise
-    currency: "INR",
-    duration: "4 Months (160 Hours Practical)",
-    bannerClass: "data-bg",
-    bannerIcon: "fa-solid fa-chart-line",
-    prereq: "None required",
-    cert: "Netcradus Certified Data Analyst",
-    highlights: [
-      "Advanced SQL, Python Data Science",
-      "PowerBI & Tableau Dashboards",
-      "Business Intelligence & Analytics"
-    ],
-    tools: ["Python", "Advanced SQL", "PowerBI", "Tableau", "Excel VBA", "Jupyter"],
-    roles: ["Data Analyst", "Business Intelligence Engineer", "PowerBI Developer"],
-    requirements: [
-      "None required"
-    ],
-    learningOutcomes: [
-      "Module 1: Advanced SQL Queries, Joins, Aggregations & Database Design",
-      "Module 2: Python for Analytics (Pandas, Matplotlib, Seaborn)",
-      "Module 3: Interactive Dashboarding with PowerBI & DAX Formulas",
-      "Module 4: Business Intelligence & Tableau Visual Storytelling",
-      "Module 5: Exploratory Data Analysis & Predictive Analytics",
-      "Module 6: Capstone Project with Real Enterprise Financial Data"
-    ],
-    skills: [
-      "Python", "Advanced SQL", "PowerBI", "Tableau", "Excel VBA", "Jupyter"
-    ],
-    tags: ["Data Analytics", "SQL", "Python", "PowerBI", "Business Intelligence"],
-    published: true,
-    featured: false
-  },
-  {
-    title: "Full Stack MERN & Next.js Development",
-    slug: "fullstack",
-    shortDescription: "MERN Stack Development with Next.js",
-    description: "Build production-ready web applications. Master React, Next.js, Node.js, Express, and MongoDB with TypeScript and Tailwind CSS.",
-    thumbnail: "/images/fullstack.png",
-    category: "FULL STACK DEVELOPMENT",
-    level: "Beginner to Advanced",
-    price: 4999900, // ₹49,999 in paise
-    discountPrice: 2999900, // ₹29,999 in paise
-    currency: "INR",
-    duration: "6 Months (240 Hours Web Labs)",
-    bannerClass: "fullstack-bg",
-    bannerIcon: "fa-solid fa-layer-group",
-    prereq: "Basic HTML & CSS knowledge",
-    cert: "Netcradus Certified Full Stack Developer",
-    highlights: [
-      "MongoDB, Express, React, Node.js",
-      "Next.js 14, TypeScript & Tailwind",
-      "CI/CD Pipeline & Web Deployment"
-    ],
-    tools: ["React 18", "Next.js 14", "Node.js", "Express", "MongoDB", "Tailwind CSS"],
-    roles: ["MERN Stack Developer", "Frontend Engineer", "Node.js Backend Developer"],
-    requirements: [
-      "Basic HTML & CSS knowledge"
-    ],
-    learningOutcomes: [
-      "Module 1: Modern HTML5, CSS3, Flexbox, Grid & Responsive UI Design",
-      "Module 2: JavaScript ES6+, Asynchronous JS, DOM & APIs",
-      "Module 3: React.js Hooks, Context API, Redux Toolkit & Component Architecture",
-      "Module 4: Node.js & Express.js REST API Architecture",
-      "Module 5: MongoDB NoSQL Database, Mongoose ODM & Authentication",
-      "Module 6: Full Stack Next.js App Deployment on Vercel & AWS S3"
-    ],
-    skills: [
-      "React 18", "Next.js 14", "Node.js", "Express", "MongoDB", "Tailwind CSS"
-    ],
-    tags: ["Full Stack", "MERN Stack", "Next.js", "React", "Node.js"],
-    published: true,
-    featured: false
-  },
-  {
-    title: "SOC Analyst & Incident Response Specialist",
-    slug: "soc",
-    shortDescription: "SOC Analyst & Network Defense Specialist",
-    description: "Audit security logs and defend against ransomware. Master SIEM operations in Splunk Enterprise, malware forensics, threat intelligence, and protocol auditing with Wireshark.",
+    title: "SOC Analyst",
+    slug: "soc-analyst",
+    shortDescription: "SOC Analyst & Incident Response Specialist",
+    description: "Audit security logs, detect cyber threats, and defend against ransomware. Master SIEM operations in Splunk Enterprise, malware forensics, and protocol auditing with Wireshark.",
     thumbnail: "/images/soc.png",
-    category: "CYBER SECURITY",
-    level: "Intermediate",
-    price: 4499900, // ₹44,999 in paise
-    discountPrice: 2699900, // ₹26,999 in paise
+    category: "Cyber Security",
+    level: "Beginner to Intermediate",
+    price: 4499900,
+    discountPrice: 2699900,
     currency: "INR",
     duration: "5 Months (200 Hours SOC Lab)",
     bannerClass: "devops-bg",
     bannerIcon: "fa-solid fa-shield-virus",
     prereq: "Networking & Security Basics",
-    cert: "Netcradus Certified SOC Security Analyst",
+    cert: "Netcradus Certified SOC Analyst (NCSA)",
     highlights: [
       "Splunk Enterprise SIEM Operations",
       "Malware Analysis & Incident Response",
-      "Threat Hunting & Forensic Analysis"
+      "Threat Hunting & Forensic Auditing"
     ],
     tools: ["Splunk Enterprise", "Wireshark", "QRadar", "Elastic SIEM", "YARA", "Autopsy"],
     roles: ["L1/L2 SOC Analyst", "Incident Responder", "Threat Hunter"],
-    requirements: [
-      "Networking & Security Basics"
-    ],
+    requirements: ["Networking & Security Basics"],
     learningOutcomes: [
-      "Module 1: SOC Operations Overview & Threat Intelligence Landscape",
-      "Module 2: Packet Analysis & Protocol Auditing with Wireshark",
-      "Module 3: SIEM Log Analysis with Splunk & Rule Creation",
-      "Module 4: Malware Forensics & Memory Analysis",
-      "Module 5: Incident Playbooks, Containment & Remediation",
-      "Module 6: Simulated Live Ransomware Attack Defense"
+      "SOC Operations Overview & Threat Intelligence",
+      "Packet Analysis & Protocol Auditing with Wireshark",
+      "SIEM Log Analysis & Rule Creation with Splunk",
+      "Incident Playbooks & Ransomware Defense"
     ],
-    skills: [
-      "Splunk Enterprise", "Wireshark", "QRadar", "Elastic SIEM", "YARA", "Autopsy"
+    skills: ["Splunk Enterprise", "Wireshark", "QRadar", "Elastic SIEM", "YARA"],
+    tags: ["Cyber Security", "SOC", "Incident Response", "SIEM"],
+    published: true,
+    featured: false
+  },
+  {
+    title: "Cloud Security Analyst",
+    slug: "cloud-security-analyst",
+    shortDescription: "Cloud Security & Infrastructure Defense Analyst",
+    description: "Protect multi-cloud infrastructures across AWS, Azure, and GCP. Master IAM policy configuration, container/Kubernetes security, and cloud compliance frameworks.",
+    thumbnail: "/images/cloud.png",
+    category: "Cyber Security",
+    level: "Intermediate",
+    price: 4999900,
+    discountPrice: 2999900,
+    currency: "INR",
+    duration: "5 Months (200 Hours Multi-Cloud)",
+    bannerClass: "cloud-bg",
+    bannerIcon: "fa-solid fa-cloud-shield",
+    prereq: "Basic Cloud & Linux knowledge",
+    cert: "Netcradus Certified Cloud Security Specialist",
+    highlights: [
+      "AWS & Azure Security Architecture",
+      "Container & Kubernetes Security",
+      "Cloud IAM & DevSecOps Integration"
     ],
-    tags: ["Cyber Security", "SOC", "Incident Response", "Splunk", "Threat Intelligence"],
+    tools: ["AWS Security Hub", "Azure Sentinel", "Prisma Cloud", "Terraform", "Docker", "Wiz"],
+    roles: ["Cloud Security Analyst", "Cloud Security Engineer", "DevSecOps Engineer"],
+    requirements: ["Basic Cloud & Linux knowledge"],
+    learningOutcomes: [
+      "Cloud Threat Landscape & Identity Access Management",
+      "Securing AWS EC2, S3 & Azure Active Directory",
+      "Docker & Kubernetes Container Hardening",
+      "DevSecOps Pipeline Security & Compliance"
+    ],
+    skills: ["AWS Security Hub", "Azure Sentinel", "Terraform", "Docker", "Kubernetes Security"],
+    tags: ["Cyber Security", "Cloud", "Cloud Security", "DevSecOps"],
+    published: true,
+    featured: false
+  },
+  {
+    title: "Cloud Engineer",
+    slug: "cloud-engineer",
+    shortDescription: "AWS, Azure & GCP Multi-Cloud Infrastructure Engineer",
+    description: "Architect scalable enterprise cloud solutions. Master AWS, Azure, and Google Cloud Platform along with Infrastructure as Code using Terraform and container orchestration with Kubernetes.",
+    thumbnail: "/images/cloud.png",
+    category: "Cloud",
+    level: "Beginner to Pro",
+    price: 3999900,
+    discountPrice: 2499900,
+    currency: "INR",
+    duration: "5 Months (200 Hours Multi-Cloud)",
+    bannerClass: "cloud-bg",
+    bannerIcon: "fa-solid fa-cloud-arrow-up",
+    prereq: "Basic Linux administration",
+    cert: "Netcradus Certified Cloud Infrastructure Engineer",
+    highlights: [
+      "AWS, Azure & GCP Core Architecture",
+      "Terraform Infrastructure as Code (IaC)",
+      "Docker & Kubernetes Containerization"
+    ],
+    tools: ["AWS Console", "Azure Portal", "Google Cloud", "Terraform", "Kubernetes", "Docker"],
+    roles: ["Cloud Solutions Engineer", "Cloud Systems Administrator", "DevOps Engineer"],
+    requirements: ["Basic Linux administration"],
+    learningOutcomes: [
+      "Cloud Fundamentals & Virtual Private Cloud (VPC) Design",
+      "AWS EC2, S3, Lambda & Azure Resource Management",
+      "Infrastructure Provisioning with Terraform",
+      "Kubernetes Cluster Deployment & Management"
+    ],
+    skills: ["AWS Console", "Azure Portal", "Terraform", "Kubernetes", "Docker", "Ansible"],
+    tags: ["Cloud", "AWS", "Azure", "GCP", "DevOps", "Terraform"],
+    published: true,
+    featured: true
+  },
+  {
+    title: "Linux Administrator",
+    slug: "linux-administrator",
+    shortDescription: "Enterprise Linux System Administration & Shell Scripting",
+    description: "Master enterprise Linux administration on RHEL and Ubuntu Server. Learn shell scripting, system performance tuning, user & access controls, and network service configuration.",
+    thumbnail: "/images/data.png",
+    category: "Linux",
+    level: "Beginner to Intermediate",
+    price: 2999900,
+    discountPrice: 1799900,
+    currency: "INR",
+    duration: "4 Months (160 Hours Practical)",
+    bannerClass: "data-bg",
+    bannerIcon: "fa-solid fa-terminal",
+    prereq: "Computer operating fundamentals",
+    cert: "Netcradus Certified Linux Administrator (RHCSA Prep)",
+    highlights: [
+      "Red Hat (RHEL) & Ubuntu Server Administration",
+      "Bash Shell Scripting & Task Automation",
+      "User Security, Storage Management & Hardening"
+    ],
+    tools: ["RHEL / CentOS", "Ubuntu Server", "Bash Scripting", "Ansible", "Systemd", "SELinux"],
+    roles: ["Linux Administrator", "System Administrator", "Infrastructure Engineer"],
+    requirements: ["Computer operating fundamentals"],
+    learningOutcomes: [
+      "Linux File System, Permissions & Access Control Lists",
+      "User & Group Administration, Package Management",
+      "Bash Shell Scripting & Automated Workflows",
+      "Network Configuration, Systemd & Firewall Hardening"
+    ],
+    skills: ["Linux", "Bash", "RHEL", "Ubuntu", "Ansible", "SELinux"],
+    tags: ["Linux", "System Administration", "RHEL", "Bash"],
+    published: true,
+    featured: false
+  },
+  {
+    title: "AI/ML",
+    slug: "ai-ml",
+    shortDescription: "Artificial Intelligence, Machine Learning & Generative AI",
+    description: "Develop intelligent AI systems. Master machine learning algorithms, deep neural networks, computer vision, transformers, and large language models (LLMs) with PyTorch and LangChain.",
+    thumbnail: "/images/ai.png",
+    category: "AI/ML",
+    level: "Intermediate",
+    price: 5999900,
+    discountPrice: 3499900,
+    currency: "INR",
+    duration: "6 Months (240 Hours Live Coding)",
+    bannerClass: "ai-bg",
+    bannerIcon: "fa-solid fa-brain",
+    prereq: "Python fundamentals & Basic Mathematics",
+    cert: "Netcradus Certified AI & ML Specialist",
+    highlights: [
+      "Supervised & Unsupervised Machine Learning",
+      "Deep Learning, Neural Networks & Computer Vision",
+      "Generative AI, LLMs & Retrieval Augmented Generation (RAG)"
+    ],
+    tools: ["PyTorch", "TensorFlow", "OpenCV", "LangChain", "HuggingFace", "Docker"],
+    roles: ["AI Engineer", "Machine Learning Specialist", "Data Scientist"],
+    requirements: ["Python fundamentals & Basic Mathematics"],
+    learningOutcomes: [
+      "Python Data Science Libraries (NumPy, Pandas, Scikit-Learn)",
+      "Supervised & Unsupervised Machine Learning",
+      "Deep Learning with PyTorch & Convolutional Neural Networks",
+      "Generative AI, Transformers, LangChain & LLM Deployment"
+    ],
+    skills: ["PyTorch", "TensorFlow", "OpenCV", "LangChain", "HuggingFace", "Python"],
+    tags: ["AI/ML", "Machine Learning", "Generative AI", "Deep Learning"],
+    published: true,
+    featured: true
+  },
+  {
+    title: "Network Security",
+    slug: "network-security",
+    shortDescription: "Enterprise Network Security & Firewall Engineering",
+    description: "Design and implement secure network perimeters. Master Next-Generation Firewalls (Palo Alto, Cisco ASA), VPNs, Intrusion Prevention Systems (IPS), and network packet analysis.",
+    thumbnail: "/images/cyber.png",
+    category: "Cyber Security",
+    level: "Beginner to Intermediate",
+    price: 3999900,
+    discountPrice: 2399900,
+    currency: "INR",
+    duration: "4 Months (160 Hours Network Labs)",
+    bannerClass: "cyber-bg",
+    bannerIcon: "fa-solid fa-network-wired",
+    prereq: "Networking fundamentals",
+    cert: "Netcradus Certified Network Security Engineer",
+    highlights: [
+      "Next-Gen Firewall Deployment (Palo Alto & Cisco ASA)",
+      "Site-to-Site & Remote Access VPN Configuration",
+      "IDS/IPS Rule Creation & Network Packet Auditing"
+    ],
+    tools: ["Cisco ASA", "Palo Alto Networks", "pfSense", "Wireshark", "GNS3", "Snort"],
+    roles: ["Network Security Engineer", "Firewall Administrator", "Security Infrastructure Specialist"],
+    requirements: ["Networking fundamentals"],
+    learningOutcomes: [
+      "Network Perimeter Defense Concepts & Segmentation",
+      "Palo Alto & Cisco ASA Firewall Policy Management",
+      "IPsec & SSL VPN Tunneling Architecture",
+      "Intrusion Detection Systems (Snort/Suricata) & Wireshark"
+    ],
+    skills: ["Cisco ASA", "Palo Alto", "pfSense", "Wireshark", "Snort"],
+    tags: ["Cyber Security", "Networking", "Network Security", "Firewalls"],
+    published: true,
+    featured: false
+  },
+  {
+    title: "Network Engineer",
+    slug: "network-engineer",
+    shortDescription: "Enterprise Routing, Switching & Network Architecture",
+    description: "Build scalable enterprise network infrastructures. Master TCP/IP protocols, VLAN configuration, routing protocols (OSPF, BGP), and Cisco IOS hardware administration.",
+    thumbnail: "/images/data.png",
+    category: "Networking",
+    level: "Beginner to Intermediate",
+    price: 3499900,
+    discountPrice: 1999900,
+    currency: "INR",
+    duration: "5 Months (200 Hours Cisco Labs)",
+    bannerClass: "data-bg",
+    bannerIcon: "fa-solid fa-sitemap",
+    prereq: "Basic computer networking interest",
+    cert: "Netcradus Certified Network Engineer (CCNA Prep)",
+    highlights: [
+      "Cisco Router & Switch Configuration",
+      "VLANs, Trunking, Spanning Tree & Subnetting",
+      "Dynamic Routing Protocols (OSPF & BGP) Implementation"
+    ],
+    tools: ["Cisco Packet Tracer", "GNS3", "Wireshark", "Cisco IOS", "BGP", "OSPF"],
+    roles: ["Network Engineer", "Network Administrator", "NOC Analyst"],
+    requirements: ["Basic computer networking interest"],
+    learningOutcomes: [
+      "OSI Model & TCP/IP Protocol Stack Deep Dive",
+      "IPv4/IPv6 Subnetting & IP Addressing Design",
+      "Cisco Switch Configuration, VLANs & Trunking",
+      "Routing Protocols (OSPF, EIGRP, BGP) & Network Troubleshooting"
+    ],
+    skills: ["Cisco IOS", "GNS3", "Wireshark", "BGP", "OSPF", "Subnetting"],
+    tags: ["Networking", "Cisco", "CCNA", "Network Infrastructure"],
     published: true,
     featured: false
   }
