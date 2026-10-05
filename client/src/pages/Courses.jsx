@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useApp } from '../App';
 
 export default function Courses() {
@@ -9,7 +10,6 @@ export default function Courses() {
     coursesError,
     reloadCourses,
     openEnrollModalFor,
-    openCourseDetails,
   } = useApp();
 
   const categoryMap = {
@@ -151,9 +151,9 @@ export default function Courses() {
                       ))}
                     </ul>
                     <div className="course-footer">
-                      <button className="btn-link" onClick={() => openCourseDetails(c.slug)}>
+                      <Link to={`/courses/${c.slug}`} className="btn-link">
                         VIEW COURSE <i className="fa-solid fa-arrow-right-long"></i>
-                      </button>
+                      </Link>
                       <button className="btn btn-sm btn-outline-cyan" onClick={() => openEnrollModalFor(c.title)}>
                         Enroll
                       </button>

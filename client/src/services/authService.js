@@ -78,4 +78,46 @@ export const authService = {
     const result = await response.json();
     return result;
   },
+
+  /**
+   * Request password reset link email
+   */
+  async forgotPassword(email) {
+    const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ email }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Failed to submit password reset request. Please try again.');
+    }
+
+    return result;
+  },
+
+  /**
+   * Reset password using token
+   */
+  async resetPassword(token, password, confirmPassword) {
+    const response = await fetch(`${API_BASE_URL}/auth/reset-password/${token}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      credentials: 'include',
+      body: JSON.stringify({ password, confirmPassword }),
+    });
+
+    const result = await response.json();
+    if (!response.ok || !result.success) {
+      throw new Error(result.message || 'Password reset failed. The link may be invalid or expired.');
+    }
+
+    return result;
+  },
 };

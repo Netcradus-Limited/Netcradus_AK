@@ -42,5 +42,13 @@ router.patch('/enrollments/:id/status', adminController.updateEnrollmentStatus);
 router.get('/inquiries', adminController.getAdminInquiries);
 router.patch('/inquiries/:id/status', adminController.updateInquiryStatus);
 
+// Assignment & Submission Management
+router.get('/courses/:courseId/assignments', adminController.getAdminAssignments);
+router.post('/courses/:courseId/assignments', adminController.createAdminAssignment);
+router.put('/assignments/:assignmentId', adminController.updateAdminAssignment);
+router.delete('/assignments/:assignmentId', adminController.deleteAdminAssignment);
+router.get('/assignments/:assignmentId/submissions', adminController.getAdminSubmissions);
+router.patch('/submissions/:submissionId/grade', adminController.gradeSubmission);
+
 module.exports = router;
 

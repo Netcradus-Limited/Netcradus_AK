@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { academyService } from '../services/academyService';
 import { studentService } from '../services/studentService';
+import { certificateService } from '../services/certificateService';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../App';
 
@@ -19,6 +20,8 @@ export default function Learn() {
   const [completedLessonIds, setCompletedLessonIds] = useState(new Set());
   const [userProgress, setUserProgress] = useState(null);
   const [markingComplete, setMarkingComplete] = useState(false);
+  const [certificate, setCertificate] = useState(null);
+  const [loadingCert, setLoadingCert] = useState(false);
 
   const [loadingCurriculum, setLoadingCurriculum] = useState(true);
   const [loadingLecture, setLoadingLecture] = useState(false);
@@ -147,6 +150,35 @@ export default function Learn() {
     }
   };
 
+  const isCourse100Completed = Boolean(userProgress && userProgress.progressPercentage === 100);
+
+  useEffect(() => {
+    if (isCourse100Completed && courseId) {
+      certificateService.getMyCourseCertificate(courseId)
+        .then((data) => setCertificate(data))
+        .catch(() => setCertificate(null));
+    }
+  }, [isCourse100Completed, courseId]);
+
+  const handleCertificateAction = async () => {
+    if (certificate && certificate.certificateId) {
+      navigate(`/certificate?id=${certificate.certificateId}`);
+      return;
+    }
+
+    setLoadingCert(true);
+    try {
+      const issued = await certificateService.issueCertificate(courseId);
+      setCertificate(issued);
+      showToast('Certificate claimed successfully! 🎉');
+      navigate(`/certificate?id=${issued.certificateId}`);
+    } catch (certErr) {
+      showToast(certErr.message || 'Failed to claim certificate.');
+    } finally {
+      setLoadingCert(false);
+    }
+  };
+
   if (loadingCurriculum) {
     return (
       <div className="learn-page" style={{ padding: '80px 20px', textAlign: 'center' }}>
@@ -173,7 +205,6 @@ export default function Learn() {
 
   const { course, curriculum } = curriculumData;
   const isCurrentLessonCompleted = activeLectureId && completedLessonIds.has(activeLectureId);
-  const isCourse100Completed = userProgress && userProgress.progressPercentage === 100;
 
   return (
     <div className="learn-page" style={{ background: 'var(--bg-dark)', minHeight: 'calc(100vh - 80px)' }}>
@@ -207,9 +238,26 @@ export default function Learn() {
 
       {/* 100% COURSE COMPLETION BANNER */}
       {isCourse100Completed && (
-        <div style={{ background: 'rgba(46, 213, 115, 0.12)', borderBottom: '1px solid rgba(46, 213, 115, 0.3)', padding: '12px 30px', color: '#2ed573', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', fontSize: '0.92rem', fontWeight: 'bold' }}>
-          <i className="fa-solid fa-graduation-cap" style={{ fontSize: '1.2rem' }}></i>
-          Congratulations! You have completed 100% of this course!
+        <div style={{ background: 'rgba(46, 213, 115, 0.12)', borderBottom: '1px solid rgba(46, 213, 115, 0.3)', padding: '12px 30px', color: '#2ed573', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '15px', fontSize: '0.92rem', fontWeight: 'bold' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <i className="fa-solid fa-graduation-cap" style={{ fontSize: '1.2rem' }}></i>
+            Congratulations! You have completed 100% of this course!
+          </div>
+          <button
+            type="button"
+            onClick={handleCertificateAction}
+            disabled={loadingCert}
+            className="btn btn-sm btn-cyan"
+            style={{ fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            {loadingCert ? (
+              <span><i className="fa-solid fa-spinner fa-spin"></i> Processing...</span>
+            ) : (
+              <span>
+                <i className="fa-solid fa-award"></i> {certificate ? 'View Certificate' : 'Claim Certificate'}
+              </span>
+            )}
+          </button>
         </div>
       )}
 

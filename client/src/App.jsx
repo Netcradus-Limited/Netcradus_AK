@@ -14,6 +14,8 @@ import Projects from './pages/Projects';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import AdminLayout from './components/admin/AdminLayout';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminStudents from './pages/admin/AdminStudents';
@@ -24,6 +26,7 @@ import CourseDetail from './pages/CourseDetail';
 import MyCourses from './pages/MyCourses';
 import Learn from './pages/Learn';
 import AdminCurriculum from './pages/admin/AdminCurriculum';
+import AdminAssignments from './pages/admin/AdminAssignments';
 import { academyService } from './services/academyService';
 
 const AppContext = createContext();
@@ -160,6 +163,7 @@ export default function App() {
                 <Route path="students" element={<AdminStudents />} />
                 <Route path="courses" element={<AdminCourses />} />
                 <Route path="courses/:courseId/curriculum" element={<AdminCurriculum />} />
+                <Route path="courses/:courseId/assignments" element={<AdminAssignments />} />
                 <Route path="enrollments" element={<AdminEnrollments />} />
                 <Route path="inquiries" element={<AdminInquiries />} />
                 <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
@@ -171,6 +175,8 @@ export default function App() {
               <Route element={<AuthLayoutContainer />}>
                 <Route path="login" element={<Login />} />
                 <Route path="signup" element={<Signup />} />
+                <Route path="forgot-password" element={<ForgotPassword />} />
+                <Route path="reset-password/:token" element={<ResetPassword />} />
               </Route>
             </Route>
 

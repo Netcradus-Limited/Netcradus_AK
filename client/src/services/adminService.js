@@ -287,5 +287,82 @@ export const adminService = {
     });
     return await handleResponse(response);
   },
+
+  /**
+   * Fetch all assignments for a course
+   */
+  async getAdminAssignments(courseId) {
+    const response = await fetch(`${API_BASE_URL}/admin/courses/${courseId}/assignments`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
+   * Create an assignment for a course
+   */
+  async createAdminAssignment(courseId, data) {
+    const response = await fetch(`${API_BASE_URL}/admin/courses/${courseId}/assignments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Update an existing assignment
+   */
+  async updateAdminAssignment(assignmentId, data) {
+    const response = await fetch(`${API_BASE_URL}/admin/assignments/${assignmentId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Delete an assignment (only if 0 submissions)
+   */
+  async deleteAdminAssignment(assignmentId) {
+    const response = await fetch(`${API_BASE_URL}/admin/assignments/${assignmentId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Fetch student submissions for an assignment
+   */
+  async getAdminSubmissions(assignmentId) {
+    const response = await fetch(`${API_BASE_URL}/admin/assignments/${assignmentId}/submissions`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
+   * Grade a student submission or request resubmission
+   */
+  async gradeSubmission(submissionId, data) {
+    const response = await fetch(`${API_BASE_URL}/admin/submissions/${submissionId}/grade`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
 };
 

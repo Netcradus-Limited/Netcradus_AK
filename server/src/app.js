@@ -83,6 +83,8 @@ const inquiryRoutes = require('./routes/inquiryRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const lectureRoutes = require('./routes/lectureRoutes');
+const paymentRoutes = require('./routes/paymentRoutes');
+const certificateRoutes = require('./routes/certificateRoutes');
 
 // 7. Base server health verification endpoint
 app.get('/api/v1/health', (req, res) => {
@@ -97,6 +99,8 @@ app.get('/api/v1/health', (req, res) => {
 app.use('/api/v1/auth', authLimiter, authRoutes);
 app.use('/api/v1/courses', publicLimiter, courseRoutes);
 app.use('/api/v1/enrollments', enrollmentRoutes);
+app.use('/api/v1/payments', paymentRoutes);
+app.use('/api/v1/certificates', certificateRoutes);
 app.use('/api/v1/inquiries', inquiryRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/student', studentRoutes);

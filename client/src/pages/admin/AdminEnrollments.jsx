@@ -44,7 +44,7 @@ export default function AdminEnrollments() {
       showToast(`Enrollment status updated to '${newStatus}'`);
       fetchEnrollments();
     } catch (err) {
-      alert(`Update failed: ${err.message}`);
+      showToast(err.message || 'Enrollment status update failed.');
     } finally {
       setUpdatingId(null);
     }

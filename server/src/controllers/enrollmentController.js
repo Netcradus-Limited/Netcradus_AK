@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Enrollment = require('../models/Enrollment');
 const Course = require('../models/Course');
 const User = require('../models/User');
+const Inquiry = require('../models/Inquiry');
 const asyncHandler = require('../utils/asyncHandler');
 const { createEnrollmentSchema } = require('../validators/enrollmentValidator');
 const escapeRegex = require('../utils/escapeRegex');
@@ -56,6 +57,41 @@ const createEnrollment = asyncHandler(async (req, res, next) => {
     return res.status(404).json({
       success: false,
       message: 'The requested course was not found or is currently inactive.',
+    });
+  }
+
+  // 2B. Commercial check: If course has a price (> 0), block free enrollment bypass
+  if (targetCourse.price && targetCourse.price > 0) {
+    // Record lead in Inquiry collection so Admissions can contact the applicant
+    try {
+      const applicantName = req.user ? req.user.fullName : (fullName ? fullName.trim() : 'Applicant');
+      const applicantEmail = req.user ? req.user.email : (email ? email.toLowerCase().trim() : '');
+      const applicantPhone = req.user ? (req.user.phone || '') : (phone ? phone.trim() : '');
+
+      if (applicantPhone && targetCourse.title) {
+        await Inquiry.create({
+          fullName: applicantName,
+          email: applicantEmail,
+          phone: applicantPhone,
+          interestedCourse: targetCourse.title,
+          source: 'quick_enquiry',
+          status: 'new',
+          message: `Application for paid course: ${targetCourse.title}. Fee: ₹${(targetCourse.price / 100).toLocaleString('en-IN')}. Awaiting payment gateway processing.`,
+        });
+      }
+    } catch (inquiryErr) {
+      // Non-fatal: do not block the 402 response if inquiry logging encounters an error
+      console.warn('Inquiry auto-logging for paid course encounter:', inquiryErr.message);
+    }
+
+    const formattedFee = (targetCourse.price / 100).toLocaleString('en-IN');
+    return res.status(402).json({
+      success: false,
+      requiresPayment: true,
+      courseTitle: targetCourse.title,
+      price: targetCourse.price,
+      currency: targetCourse.currency || 'INR',
+      message: `Enrollment in '${targetCourse.title}' requires payment of ₹${formattedFee}. Free instant enrollment is not available for this course. Our admissions team will reach out to complete your registration.`,
     });
   }
 

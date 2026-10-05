@@ -16,6 +16,8 @@ export default function AdminCourses() {
   const [editingCourse, setEditingCourse] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState(null);
+  const [courseToDelete, setCourseToDelete] = useState(null);
+  const [deletingCourse, setDeletingCourse] = useState(false);
 
   const defaultFormData = {
     title: '',
@@ -118,16 +120,22 @@ export default function AdminCourses() {
     }
   };
 
-  const handleDeleteCourse = async (course) => {
-    const confirmMsg = `Are you sure you want to delete '${course.title}'?\nThis action cannot be undone.`;
-    if (!window.confirm(confirmMsg)) return;
+  const handleDeleteCourse = (course) => {
+    setCourseToDelete(course);
+  };
 
+  const executeDeleteCourse = async () => {
+    if (!courseToDelete) return;
+    setDeletingCourse(true);
     try {
-      await adminService.deleteCourse(course._id);
-      showToast(`Course '${course.title}' deleted successfully.`);
+      await adminService.deleteCourse(courseToDelete._id);
+      showToast(`Course '${courseToDelete.title}' deleted successfully.`);
+      setCourseToDelete(null);
       fetchCourses();
     } catch (err) {
-      alert(`Deletion blocked: ${err.message}`);
+      showToast(err.message || 'Course deletion blocked.');
+    } finally {
+      setDeletingCourse(false);
     }
   };
 
@@ -233,6 +241,14 @@ export default function AdminCourses() {
                             title="Manage Course Curriculum & Lectures"
                           >
                             <i className="fa-solid fa-list-check"></i> Curriculum
+                          </Link>
+                          <Link
+                            to={`/admin/courses/${c._id}/assignments`}
+                            className="btn-admin-action"
+                            style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)' }}
+                            title="Manage Course Assignments & Grade Submissions"
+                          >
+                            <i className="fa-solid fa-pen-to-square"></i> Assignments
                           </Link>
                           <button
                             type="button"
@@ -405,6 +421,63 @@ export default function AdminCourses() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Course Deletion Confirmation Modal */}
+      {courseToDelete && (
+        <div className="modal-overlay" onClick={() => !deletingCourse && setCourseToDelete(null)}>
+          <div className="modal-card" style={{ maxWidth: '480px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <i className="fa-solid fa-triangle-exclamation" style={{ color: '#ff4757', marginRight: '8px' }}></i>
+                Confirm Course Deletion
+              </h3>
+              <button
+                type="button"
+                className="btn-close"
+                disabled={deletingCourse}
+                onClick={() => setCourseToDelete(null)}
+              >
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="modal-body" style={{ padding: '20px 0' }}>
+              <p style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.5', margin: 0 }}>
+                Are you sure you want to delete course <strong>'{courseToDelete.title}'</strong>?
+              </p>
+              <p style={{ color: '#ff4757', fontSize: '0.85rem', marginTop: '10px', marginBottom: 0 }}>
+                <i className="fa-solid fa-circle-exclamation"></i> This action is permanent and cannot be undone. All modules, lessons, assignments, and sessions belonging to this course will be deleted.
+              </p>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', marginTop: '8px', marginBottom: 0 }}>
+                Note: If any active or completed student enrollments exist, deletion will be safely rejected by the server to preserve student academic records.
+              </p>
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn-admin-action"
+                disabled={deletingCourse}
+                onClick={() => setCourseToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-admin-action danger"
+                disabled={deletingCourse}
+                onClick={executeDeleteCourse}
+              >
+                {deletingCourse ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin"></i> Deleting...
+                  </>
+                ) : (
+                  'Delete Course'
+                )}
+              </button>
+            </div>
           </div>
         </div>
       )}

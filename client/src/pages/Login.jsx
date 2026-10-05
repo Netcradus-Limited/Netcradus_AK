@@ -159,14 +159,13 @@ export default function Login() {
             />
             Remember Me
           </label>
-          <button
-            type="button"
+          <Link
+            to="/forgot-password"
             className="btn-link"
-            style={{ color: 'var(--cyan-primary)', fontSize: '0.85rem', fontWeight: 500 }}
-            onClick={() => showToast('Password reset link service will be enabled in future phase.')}
+            style={{ color: 'var(--cyan-primary)', fontSize: '0.85rem', fontWeight: 500, textDecoration: 'none' }}
           >
             Forgot Password?
-          </button>
+          </Link>
         </div>
 
         {/* Submit Button */}

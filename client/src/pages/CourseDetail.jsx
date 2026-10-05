@@ -3,6 +3,8 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../App';
 import { useAuth } from '../context/AuthContext';
 import { academyService } from '../services/academyService';
+import { paymentService } from '../services/paymentService';
+import { loadRazorpay } from '../utils/loadRazorpay';
 
 export default function CourseDetail() {
   const { slug } = useParams();
@@ -14,6 +16,9 @@ export default function CourseDetail() {
   const [curriculum, setCurriculum] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Razorpay Checkout State: 'idle' | 'initiating' | 'window_open' | 'verifying' | 'success'
+  const [checkoutState, setCheckoutState] = useState('idle');
 
   // Preview Video Modal State
   const [previewVideoUrl, setPreviewVideoUrl] = useState(null);
@@ -46,14 +51,97 @@ export default function CourseDetail() {
     }
   }, [slug]);
 
-  const handleEnrollClick = () => {
+  const handleEnrollClick = async () => {
     if (!isAuthenticated) {
       showToast('Please log in or sign up to enroll in this course.');
       navigate('/login');
-    } else if (user?.role === 'student') {
-      openEnrollModalFor(course?.title || 'Selected Program');
-    } else {
+      return;
+    }
+
+    if (user?.role !== 'student') {
       showToast('Enrollment is available for student accounts.');
+      return;
+    }
+
+    const isPaid = Boolean(
+      (course?.discountPrice && course.discountPrice > 0) ||
+      (course?.price && course.price > 0)
+    );
+
+    if (!isPaid) {
+      // Free course: keep existing enrollment modal behavior unchanged
+      openEnrollModalFor(course?.title || 'Selected Program');
+      return;
+    }
+
+    // Paid course: Initiate secure Razorpay Checkout
+    if (checkoutState !== 'idle') return;
+
+    setCheckoutState('initiating');
+    try {
+      const scriptLoaded = await loadRazorpay();
+      if (!scriptLoaded) {
+        setCheckoutState('idle');
+        showToast('Unable to load secure payment checkout. Please try again.');
+        return;
+      }
+
+      const orderData = await paymentService.createPaymentOrder(course._id);
+
+      setCheckoutState('window_open');
+
+      const options = {
+        key: orderData.keyId,
+        amount: orderData.amount,
+        currency: orderData.currency || 'INR',
+        name: 'Netcradus Academy',
+        description: course.title,
+        order_id: orderData.orderId,
+        handler: async (response) => {
+          setCheckoutState('verifying');
+          try {
+            await paymentService.verifyPayment({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              courseId: course._id,
+            });
+            setCheckoutState('success');
+            showToast('Payment successful! Enrollment activated.');
+            navigate(`/learn/${course._id}`);
+          } catch (verifyErr) {
+            console.error('[CourseDetail] Payment verification error:', verifyErr);
+            setCheckoutState('idle');
+            showToast(verifyErr.message || 'Payment verification failed. Please contact support.');
+          }
+        },
+        prefill: {
+          name: user?.fullName || '',
+          email: user?.email || '',
+          contact: user?.phone || '',
+        },
+        theme: {
+          color: '#00f2fe',
+        },
+        modal: {
+          ondismiss: () => {
+            setCheckoutState('idle');
+          },
+        },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', (failRes) => {
+        console.warn('[CourseDetail] Razorpay payment failed:', failRes.error);
+        setCheckoutState('idle');
+        showToast(`Payment failed: ${failRes.error?.description || 'Transaction was declined.'}`);
+      });
+
+      rzp.open();
+    } catch (orderErr) {
+      console.error('[CourseDetail] Error initiating payment checkout:', orderErr);
+      setCheckoutState('idle');
+      showToast(orderErr.message || 'Failed to initiate secure checkout.');
     }
   };
 
@@ -298,15 +386,34 @@ export default function CourseDetail() {
                 <button
                   type="button"
                   onClick={handleEnrollClick}
+                  disabled={checkoutState !== 'idle'}
                   className="btn btn-cyan btn-full"
                   style={{ padding: '14px 20px', fontSize: '1rem', width: '100%', marginBottom: '15px' }}
                 >
-                  <i className="fa-solid fa-user-plus"></i> {isAuthenticated ? 'Enroll Now / Apply' : 'Register to Enroll'}
+                  {checkoutState === 'initiating' && (
+                    <span><i className="fa-solid fa-spinner fa-spin"></i> Initiating secure checkout...</span>
+                  )}
+                  {checkoutState === 'window_open' && (
+                    <span><i className="fa-solid fa-credit-card"></i> Payment window open...</span>
+                  )}
+                  {checkoutState === 'verifying' && (
+                    <span><i className="fa-solid fa-spinner fa-spin"></i> Verifying payment...</span>
+                  )}
+                  {checkoutState === 'success' && (
+                    <span><i className="fa-solid fa-check"></i> Payment successful!</span>
+                  )}
+                  {checkoutState === 'idle' && (
+                    <span>
+                      <i className="fa-solid fa-user-plus"></i> {isAuthenticated ? 'Enroll Now / Apply' : 'Register to Enroll'}
+                    </span>
+                  )}
                 </button>
 
                 <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textAlign: 'center', marginBottom: '20px', lineHeight: '1.4' }}>
                   {isAuthenticated
-                    ? 'Submit enrollment application for admin approval & access token.'
+                    ? ((course.price && course.price > 0)
+                        ? 'Instant access upon secure Razorpay payment completion.'
+                        : 'Submit enrollment application for admin approval & access token.')
                     : 'Log in or register an account to apply for course enrollment.'}
                 </p>
 

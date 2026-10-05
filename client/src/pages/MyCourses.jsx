@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../App';
 import { studentService } from '../services/studentService';
+import { certificateService } from '../services/certificateService';
 
 export default function MyCourses() {
   const { showToast } = useApp();
+  const navigate = useNavigate();
   const [enrollments, setEnrollments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -20,6 +22,24 @@ export default function MyCourses() {
       setError(err.message || 'Failed to load your enrolled courses.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleViewOrClaimCertificate = async (targetCourseId) => {
+    try {
+      showToast('Opening credential registry...');
+      let cert;
+      try {
+        cert = await certificateService.getMyCourseCertificate(targetCourseId);
+      } catch {
+        // Auto-claim if not already created
+        cert = await certificateService.issueCertificate(targetCourseId);
+      }
+      if (cert && cert.certificateId) {
+        navigate(`/certificate?id=${cert.certificateId}`);
+      }
+    } catch (err) {
+      showToast(err.message || 'Unable to access course certificate.');
     }
   };
 
@@ -220,6 +240,16 @@ export default function MyCourses() {
                           <i className={`fa-solid ${item.progressPercentage === 100 ? 'fa-circle-check' : 'fa-circle-play'}`}></i>{' '}
                           {item.progressPercentage === 100 ? 'Completed' : 'Continue Learning'}
                         </Link>
+                        {item.progressPercentage === 100 && (
+                          <button
+                            type="button"
+                            className="btn btn-sm btn-cyan"
+                            onClick={() => handleViewOrClaimCertificate(course._id)}
+                            title="View or Claim Official Certificate"
+                          >
+                            <i className="fa-solid fa-award"></i> Certificate
+                          </button>
+                        )}
                         <button
                           type="button"
                           className="btn btn-sm btn-outline-cyan"

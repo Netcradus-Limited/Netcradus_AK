@@ -92,13 +92,19 @@ export default function AdminCurriculum() {
     }
   };
 
-  const handleDeleteModule = async (mod) => {
-    if (!window.confirm(`Are you sure you want to delete module "${mod.title}" and all its associated lectures?`)) {
-      return;
-    }
+  const [moduleToDelete, setModuleToDelete] = useState(null);
+  const [lectureToDelete, setLectureToDelete] = useState(null);
+
+  const handleDeleteModule = (mod) => {
+    setModuleToDelete(mod);
+  };
+
+  const handleConfirmDeleteModule = async () => {
+    if (!moduleToDelete) return;
     try {
-      await adminService.deleteModule(mod._id);
+      await adminService.deleteModule(moduleToDelete._id);
       showToast('Module deleted successfully!');
+      setModuleToDelete(null);
       fetchCurriculum();
     } catch (err) {
       showToast(err.message || 'Failed to delete module.');
@@ -173,11 +179,16 @@ export default function AdminCurriculum() {
     }
   };
 
-  const handleDeleteLecture = async (lec) => {
-    if (!window.confirm(`Delete lecture "${lec.title}"?`)) return;
+  const handleDeleteLecture = (lec) => {
+    setLectureToDelete(lec);
+  };
+
+  const handleConfirmDeleteLecture = async () => {
+    if (!lectureToDelete) return;
     try {
-      await adminService.deleteLecture(lec._id);
+      await adminService.deleteLecture(lectureToDelete._id);
       showToast('Lecture deleted!');
+      setLectureToDelete(null);
       fetchCurriculum();
     } catch (err) {
       showToast(err.message || 'Failed to delete lecture.');
@@ -411,6 +422,88 @@ export default function AdminCurriculum() {
                 <button type="submit" disabled={submitting} className="btn btn-cyan">{submitting ? 'Saving...' : 'Save Lecture'}</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE MODULE CONFIRMATION MODAL */}
+      {moduleToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-card" style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--danger)' }}></i>
+                Confirm Delete Module
+              </h3>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setModuleToDelete(null)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="modal-body" style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+              Are you sure you want to delete module <strong>"{moduleToDelete.title}"</strong> and all its associated lectures? This action cannot be undone.
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn-admin-action"
+                onClick={() => setModuleToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-admin-action"
+                style={{ background: 'var(--danger)', color: '#fff', borderColor: 'var(--danger)' }}
+                onClick={handleConfirmDeleteModule}
+              >
+                Delete Module
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* DELETE LECTURE CONFIRMATION MODAL */}
+      {lectureToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-card" style={{ maxWidth: '440px' }}>
+            <div className="modal-header">
+              <h3 style={{ margin: 0, color: 'var(--white)', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--danger)' }}></i>
+                Confirm Delete Lecture
+              </h3>
+              <button
+                type="button"
+                className="btn-close"
+                onClick={() => setLectureToDelete(null)}
+              >
+                &times;
+              </button>
+            </div>
+            <div className="modal-body" style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>
+              Are you sure you want to delete lecture <strong>"{lectureToDelete.title}"</strong>? This action cannot be undone.
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn-admin-action"
+                onClick={() => setLectureToDelete(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn-admin-action"
+                style={{ background: 'var(--danger)', color: '#fff', borderColor: 'var(--danger)' }}
+                onClick={handleConfirmDeleteLecture}
+              >
+                Delete Lecture
+              </button>
+            </div>
           </div>
         </div>
       )}

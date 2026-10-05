@@ -13,6 +13,7 @@ export default function AdminStudents() {
   const [totalPages, setTotalPages] = useState(1);
   const [totalStudents, setTotalStudents] = useState(0);
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [studentToToggle, setStudentToToggle] = useState(null);
 
   const fetchStudents = async () => {
     setLoading(true);
@@ -39,18 +40,23 @@ export default function AdminStudents() {
     fetchStudents();
   }, [search, statusFilter, page]);
 
-  const handleToggleStatus = async (student) => {
+  const handleToggleStatus = (student) => {
+    setStudentToToggle(student);
+  };
+
+  const executeToggleStatus = async () => {
+    if (!studentToToggle) return;
+    const student = studentToToggle;
     const newStatus = student.status === 'active' ? 'disabled' : 'active';
-    const confirmMsg = `Are you sure you want to set account status for ${student.email} to '${newStatus}'?`;
-    if (!window.confirm(confirmMsg)) return;
 
     setActionLoadingId(student._id);
     try {
       await adminService.updateStudentStatus(student._id, newStatus);
       showToast(`Student status updated to '${newStatus}'`);
+      setStudentToToggle(null);
       fetchStudents();
     } catch (err) {
-      alert(`Status update failed: ${err.message}`);
+      showToast(err.message || 'Status update failed.');
     } finally {
       setActionLoadingId(null);
     }
@@ -194,6 +200,60 @@ export default function AdminStudents() {
           )}
         </div>
       </div>
+
+      {/* Account Status Confirmation Modal */}
+      {studentToToggle && (
+        <div className="modal-overlay" onClick={() => setStudentToToggle(null)}>
+          <div className="modal-card" style={{ maxWidth: '460px' }} onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h3>
+                <i className="fa-solid fa-triangle-exclamation" style={{ color: 'var(--accent-orange, #ff6b00)', marginRight: '8px' }}></i>
+                Confirm Account Status Change
+              </h3>
+              <button type="button" className="btn-close" onClick={() => setStudentToToggle(null)}>
+                <i className="fa-solid fa-xmark"></i>
+              </button>
+            </div>
+            <div className="modal-body" style={{ padding: '20px 0' }}>
+              <p style={{ color: 'var(--text-main)', fontSize: '0.95rem', lineHeight: '1.5', margin: 0 }}>
+                Are you sure you want to set account status for <strong>{studentToToggle.email}</strong> to{' '}
+                <strong style={{ color: studentToToggle.status === 'active' ? '#ff4757' : '#2ed573' }}>
+                  '{studentToToggle.status === 'active' ? 'disabled' : 'active'}'
+                </strong>?
+              </p>
+              {studentToToggle.status === 'active' && (
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '10px', marginBottom: 0 }}>
+                  Disabled accounts cannot log in or access enrolled course materials.
+                </p>
+              )}
+            </div>
+            <div className="modal-footer" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button
+                type="button"
+                className="btn-admin-action"
+                disabled={actionLoadingId === studentToToggle._id}
+                onClick={() => setStudentToToggle(null)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className={`btn-admin-action ${studentToToggle.status === 'active' ? 'danger' : 'success'}`}
+                disabled={actionLoadingId === studentToToggle._id}
+                onClick={executeToggleStatus}
+              >
+                {actionLoadingId === studentToToggle._id ? (
+                  <>
+                    <i className="fa-solid fa-spinner fa-spin"></i> Updating...
+                  </>
+                ) : (
+                  `Set to ${studentToToggle.status === 'active' ? 'Disabled' : 'Active'}`
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

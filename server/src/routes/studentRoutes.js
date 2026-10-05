@@ -22,6 +22,34 @@ router.get('/dashboard', studentController.getStudentDashboard);
 router.get('/enrollments', studentController.getStudentEnrollments);
 
 /**
+ * @desc    Get study materials for enrolled courses
+ * @route   GET /api/v1/student/materials
+ * @access  Private (Authenticated Student)
+ */
+router.get('/materials', studentController.getStudentMaterials);
+
+/**
+ * @desc    Get live interactive mentoring sessions for enrolled courses
+ * @route   GET /api/v1/student/live-sessions
+ * @access  Private (Authenticated Student)
+ */
+router.get('/live-sessions', studentController.getStudentLiveSessions);
+
+/**
+ * @desc    Get assignments for enrolled courses with student's own submission
+ * @route   GET /api/v1/student/assignments
+ * @access  Private (Authenticated Student)
+ */
+router.get('/assignments', studentController.getStudentAssignments);
+
+/**
+ * @desc    Submit or update submission for an assignment
+ * @route   POST /api/v1/student/assignments/:assignmentId/submit
+ * @access  Private (Authenticated Student)
+ */
+router.post('/assignments/:assignmentId/submit', studentController.submitAssignment);
+
+/**
  * @desc    Mark a lesson as complete
  * @route   POST /api/v1/student/lessons/:lessonId/complete
  * @access  Private (Authenticated Student)

@@ -48,7 +48,7 @@ export default function AdminInquiries() {
       showToast(`Inquiry status updated to '${newStatus}'`);
       fetchInquiries();
     } catch (err) {
-      alert(`Status update failed: ${err.message}`);
+      showToast(err.message || 'Inquiry status update failed.');
     } finally {
       setUpdatingId(null);
     }

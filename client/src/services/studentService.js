@@ -87,6 +87,59 @@ export const studentService = {
     const result = await handleResponse(response);
     return result.data;
   },
+
+  /**
+   * Fetch study materials (PDFs & resources) for enrolled courses
+   */
+  async getStudyMaterials() {
+    const response = await fetch(`${API_BASE_URL}/student/materials`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
+   * Fetch live interactive mentoring sessions for enrolled courses
+   */
+  async getLiveSessions() {
+    const response = await fetch(`${API_BASE_URL}/student/live-sessions`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
+   * Fetch assignments for enrolled courses
+   */
+  async getAssignments() {
+    const response = await fetch(`${API_BASE_URL}/student/assignments`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
+   * Submit or update assignment submission
+   */
+  async submitAssignment(assignmentId, payload) {
+    const response = await fetch(`${API_BASE_URL}/student/assignments/${assignmentId}/submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload),
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
 };
 
 

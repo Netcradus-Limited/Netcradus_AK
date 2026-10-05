@@ -32,7 +32,28 @@ const loginSchema = Joi.object({
   rememberMe: Joi.boolean().optional(),
 });
 
+const forgotPasswordSchema = Joi.object({
+  email: Joi.string().email().lowercase().trim().required().messages({
+    'string.empty': 'Email address is required',
+    'string.email': 'Please enter a valid email address',
+  }),
+});
+
+const resetPasswordSchema = Joi.object({
+  password: Joi.string().min(8).max(128).required().messages({
+    'string.empty': 'Password is required',
+    'string.min': 'Password must be at least 8 characters long',
+    'string.max': 'Password cannot exceed 128 characters',
+  }),
+  confirmPassword: Joi.string().valid(Joi.ref('password')).required().messages({
+    'any.only': 'Passwords do not match',
+    'string.empty': 'Please confirm your password',
+  }),
+});
+
 module.exports = {
   signupSchema,
   loginSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
 };

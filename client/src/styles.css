@@ -7369,3 +7369,69 @@ body[data-page="home"] .hero-section.hero-redesign,
     justify-content: center;
   }
 }
+
+/* ==========================================================================
+   PRINT / SAVE AS PDF CERTIFICATE STYLES
+   ========================================================================== */
+@media print {
+  body, html {
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide navigation, header, footers, forms, action buttons, modals */
+  .navbar,
+  .footer,
+  .page-banner-section,
+  .cert-verify-card,
+  .cert-action-bar,
+  .btn,
+  header,
+  footer,
+  .toast-container,
+  .modal-overlay {
+    display: none !important;
+  }
+
+  .certificate-page,
+  .certificate-section,
+  .container {
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-shadow: none !important;
+  }
+
+  .cert-grid-2col {
+    display: block !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .sample-cert-card {
+    display: block !important;
+    margin: 40px auto !important;
+    width: 100% !important;
+    max-width: 850px !important;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .cert-frame {
+    background: #0d172a !important;
+    color: #ffffff !important;
+    border: 4px solid #d4af37 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    box-shadow: none !important;
+    padding: 30px !important;
+  }
+
+  .cert-inner-border {
+    border: 2px dashed #d4af37 !important;
+    padding: 30px !important;
+  }
+}

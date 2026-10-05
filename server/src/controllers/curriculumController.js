@@ -322,6 +322,20 @@ exports.deleteModule = asyncHandler(async (req, res) => {
     return res.status(404).json({ success: false, message: 'Module not found.' });
   }
 
+  // Find all child lessons to clean up from student enrollment progress
+  const childLessons = await Lesson.find({ moduleId }).select('_id');
+  const childLessonIds = childLessons.map((l) => l._id);
+
+  if (childLessonIds.length > 0) {
+    await Enrollment.updateMany(
+      { courseId: moduleDoc.courseId },
+      {
+        $pull: { completedLessons: { $in: childLessonIds } },
+        $unset: { lastAccessedLesson: { $in: childLessonIds } },
+      }
+    );
+  }
+
   // Delete all child lessons first
   await Lesson.deleteMany({ moduleId });
   await moduleDoc.deleteOne();
@@ -474,6 +488,15 @@ exports.deleteLecture = asyncHandler(async (req, res) => {
   if (!lesson) {
     return res.status(404).json({ success: false, message: 'Lecture not found.' });
   }
+
+  // Remove this lesson from any student's completed lessons or last accessed references
+  await Enrollment.updateMany(
+    { courseId: lesson.courseId },
+    {
+      $pull: { completedLessons: lesson._id },
+      $unset: { lastAccessedLesson: lesson._id },
+    }
+  );
 
   await lesson.deleteOne();
 

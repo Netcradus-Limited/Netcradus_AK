@@ -1,16 +1,83 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useApp } from '../App';
+import { certificateService } from '../services/certificateService';
 
 export default function Certificate() {
-  const [certId, setCertId] = useState('NC-2026-9941');
-  const [showResult, setShowResult] = useState(false);
+  const [searchParams] = useSearchParams();
+  const queryId = searchParams.get('id');
+
+  const [certId, setCertId] = useState(queryId || '');
+  const [verifying, setVerifying] = useState(false);
+  const [certData, setCertData] = useState(null);
+  const [error, setError] = useState(null);
+
   const { showToast } = useApp();
 
-  const handleVerify = (e) => {
-    e.preventDefault();
-    showToast(`Querying Netcradus Global Accreditation Database for ID: ${certId.trim()}...`);
-    setShowResult(true);
+  // Execute verification against real backend API
+  const performVerification = async (targetId) => {
+    const cleanId = (targetId || '').trim();
+    if (!cleanId) {
+      showToast('Please enter a Certificate ID.');
+      return;
+    }
+
+    setVerifying(true);
+    setError(null);
+    setCertData(null);
+
+    try {
+      const data = await certificateService.verifyCertificate(cleanId);
+      setCertData(data);
+      if (data.status === 'revoked') {
+        showToast('Notice: This credential has been revoked by administration.');
+      } else {
+        showToast('Official credential verified successfully!');
+      }
+    } catch (err) {
+      const errorMsg = err.message || 'Credential Not Found. The specified Certificate ID is not in our verified registry.';
+      setError(errorMsg);
+      showToast(errorMsg);
+    } finally {
+      setVerifying(false);
+    }
   };
+
+  // Auto-verify if id query parameter is provided in URL
+  useEffect(() => {
+    if (queryId && queryId.trim()) {
+      setCertId(queryId.trim());
+      performVerification(queryId.trim());
+    }
+  }, [queryId]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    performVerification(certId);
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleCopyLink = () => {
+    if (!certData) return;
+    const shareUrl = `${window.location.origin}/certificate?id=${certData.certificateId}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareUrl);
+      showToast('Verification URL copied to clipboard!');
+    } else {
+      showToast(`Verification link: ${shareUrl}`);
+    }
+  };
+
+  const formattedDate = certData?.issueDate
+    ? new Date(certData.issueDate).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
 
   return (
     <div className="certificate-page">
@@ -33,10 +100,10 @@ export default function Certificate() {
               <div className="verify-header">
                 <i className="fa-solid fa-shield-check verify-icon"></i>
                 <h3>Credential Verification Portal</h3>
-                <p>Enter the 12-digit Certificate ID printed on the official certificate to verify authenticity.</p>
+                <p>Enter the Certificate ID printed on the official certificate to verify authenticity.</p>
               </div>
 
-              <form onSubmit={handleVerify} className="verify-form">
+              <form onSubmit={handleSubmit} className="verify-form">
                 <div className="form-group">
                   <label htmlFor="certIdInput">Certificate ID Number *</label>
                   <div className="input-with-btn">
@@ -44,39 +111,69 @@ export default function Certificate() {
                       type="text"
                       id="certIdInput"
                       className="form-input"
-                      placeholder="e.g. NC-2026-9941"
+                      placeholder="e.g. NC-2026-XXXXXXXX"
                       value={certId}
                       onChange={(e) => setCertId(e.target.value)}
                       required
                     />
-                    <button type="submit" className="btn btn-cyan">
-                      <i className="fa-solid fa-magnifying-glass"></i> VERIFY
+                    <button type="submit" className="btn btn-cyan" disabled={verifying}>
+                      {verifying ? (
+                        <span><i className="fa-solid fa-spinner fa-spin"></i> VERIFYING...</span>
+                      ) : (
+                        <span><i className="fa-solid fa-magnifying-glass"></i> VERIFY</span>
+                      )}
                     </button>
                   </div>
                 </div>
               </form>
 
               {/* Verification Result Display Box */}
-              {showResult && (
+              {certData && (
                 <div className="cert-result-box" style={{ display: 'block', animation: 'fadeIn 0.5s ease' }}>
-                  <div className="result-status valid">
-                    <i className="fa-solid fa-circle-check"></i> OFFICIAL CREDENTIAL VERIFIED
-                  </div>
+                  {certData.status === 'revoked' ? (
+                    <div className="result-status revoked" style={{ color: '#ff4757', fontWeight: 800, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px', paddingBottom: '12px', borderBottom: '1px solid var(--border-subtle)', marginBottom: '15px' }}>
+                      <i className="fa-solid fa-circle-xmark"></i> CREDENTIAL REVOKED
+                    </div>
+                  ) : (
+                    <div className="result-status valid">
+                      <i className="fa-solid fa-circle-check"></i> OFFICIAL CREDENTIAL VERIFIED
+                    </div>
+                  )}
+
                   <div className="result-details">
-                    <div className="rd-row"><span>Student Name:</span><strong>Rahul Sharma</strong></div>
-                    <div className="rd-row"><span>Certificate Name:</span><strong>Netcradus Certified Ethical Hacker (NCEH)</strong></div>
-                    <div className="rd-row"><span>Certificate ID:</span><code>{certId.trim()}</code></div>
-                    <div className="rd-row"><span>Issue Date:</span><strong>July 15, 2026</strong></div>
-                    <div className="rd-row"><span>Accreditation:</span><strong>ISO 9001:2015 & NASSCOM Aligned</strong></div>
+                    <div className="rd-row"><span>Student Name:</span><strong>{certData.studentName}</strong></div>
+                    <div className="rd-row"><span>Program / Track:</span><strong>{certData.courseName}</strong></div>
+                    <div className="rd-row"><span>Certificate ID:</span><code>{certData.certificateId}</code></div>
+                    <div className="rd-row"><span>Issue Date:</span><strong>{formattedDate}</strong></div>
+                    <div className="rd-row"><span>Status:</span><strong style={{ color: certData.status === 'active' ? '#2ed573' : '#ff4757', textTransform: 'uppercase' }}>{certData.status}</strong></div>
+                    <div className="rd-row"><span>Accreditation:</span><strong>ISO 9001:2015 & Industry Aligned</strong></div>
                   </div>
-                  <button className="btn btn-sm btn-outline-cyan btn-block" onClick={() => showToast(`Downloading official syllabus/certificate for ID: ${certId}...`)}>
-                    <i className="fa-solid fa-download"></i> Download Verified Certificate (PDF)
+
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-outline-cyan btn-block"
+                    onClick={handlePrint}
+                    style={{ width: '100%', marginTop: '10px' }}
+                  >
+                    <i className="fa-solid fa-print"></i> Print / Save as PDF
                   </button>
+                </div>
+              )}
+
+              {/* Error / Not Found Display Box */}
+              {error && (
+                <div className="cert-result-box" style={{ display: 'block', animation: 'fadeIn 0.5s ease', borderLeft: '3px solid #ff4757' }}>
+                  <div style={{ color: '#ff4757', fontWeight: 800, fontSize: '0.92rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <i className="fa-solid fa-triangle-exclamation"></i> Credential Not Found
+                  </div>
+                  <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: 0, lineHeight: '1.5' }}>
+                    {error}
+                  </p>
                 </div>
               )}
             </div>
 
-            {/* Sample Digital Certificate Display */}
+            {/* Live Digital Certificate Display */}
             <div className="sample-cert-card">
               <div className="cert-frame">
                 <div className="cert-inner-border">
@@ -87,10 +184,14 @@ export default function Certificate() {
                   </div>
                   <div className="cert-body-text">
                     <p>This is to certify that</p>
-                    <h2 className="cert-holder-name">Rahul Sharma</h2>
-                    <p>has successfully completed the 6-Month Intensive Practical Track in</p>
-                    <h3 className="cert-course-name">ETHICAL HACKING & PENETRATION TESTING</h3>
-                    <p>and demonstrated high proficiency in VAPT, Web Security & SOC Operations.</p>
+                    <h2 className="cert-holder-name">
+                      {certData ? certData.studentName : 'Student Name'}
+                    </h2>
+                    <p>has successfully completed the Accredited Professional Program in</p>
+                    <h3 className="cert-course-name">
+                      {certData ? certData.courseName : 'Professional Program Track'}
+                    </h3>
+                    <p>and demonstrated high practical proficiency in laboratory assessments and curriculum benchmarks.</p>
                   </div>
                   <div className="cert-footer-row">
                     <div className="cert-sig">
@@ -99,7 +200,9 @@ export default function Certificate() {
                     </div>
                     <div className="cert-qr">
                       <i className="fa-solid fa-qrcode"></i>
-                      <span>Scan to Verify</span>
+                      <span>
+                        {certData ? certData.certificateId : 'Scan / Verify ID'}
+                      </span>
                     </div>
                     <div className="cert-sig">
                       <div className="sig-line">Academic Council</div>
@@ -108,12 +211,22 @@ export default function Certificate() {
                   </div>
                 </div>
               </div>
+
               <div className="cert-action-bar">
-                <button className="btn btn-sm btn-cyan" onClick={() => showToast('Downloading Sample Certificate PDF...')}>
-                  <i className="fa-solid fa-file-arrow-down"></i> Download Sample Certificate
+                <button
+                  type="button"
+                  className="btn btn-sm btn-cyan"
+                  onClick={handlePrint}
+                >
+                  <i className="fa-solid fa-print"></i> Print / Save as PDF
                 </button>
-                <button className="btn btn-sm btn-outline" onClick={() => showToast('Share link copied! Add directly to your LinkedIn Licenses & Certifications.')}>
-                  <i className="fa-brands fa-linkedin"></i> Share to LinkedIn
+                <button
+                  type="button"
+                  className="btn btn-sm btn-outline"
+                  onClick={handleCopyLink}
+                  disabled={!certData}
+                >
+                  <i className="fa-solid fa-link"></i> Copy Verification Link
                 </button>
               </div>
             </div>
