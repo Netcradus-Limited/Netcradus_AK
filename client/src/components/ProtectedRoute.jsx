@@ -1,6 +1,7 @@
 import React from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { getRoleHomePath } from '../utils/roleUtils';
 
 export default function ProtectedRoute({ allowedRoles }) {
   const { isAuthenticated, user, loading } = useAuth();
@@ -26,9 +27,7 @@ export default function ProtectedRoute({ allowedRoles }) {
   // Role-based access control check
   if (allowedRoles && allowedRoles.length > 0) {
     if (!user || !allowedRoles.includes(user.role)) {
-      const fallbackPath = (user?.role === 'admin' || user?.role === 'super_admin')
-        ? '/admin/dashboard'
-        : '/dashboard';
+      const fallbackPath = getRoleHomePath(user?.role);
       return <Navigate to={fallbackPath} replace />;
     }
   }

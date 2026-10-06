@@ -5,6 +5,7 @@ import { studentService } from '../services/studentService';
 import { certificateService } from '../services/certificateService';
 import { useAuth } from '../context/AuthContext';
 import { useApp } from '../App';
+import QuizPlayer from '../components/learn/QuizPlayer';
 
 export default function Learn() {
   const { courseId } = useParams();
@@ -206,6 +207,33 @@ export default function Learn() {
   const { course, curriculum } = curriculumData;
   const isCurrentLessonCompleted = activeLectureId && completedLessonIds.has(activeLectureId);
 
+  // Handle quiz passed callback
+  const handleQuizPassed = (result) => {
+    if (activeLectureId) {
+      setCompletedLessonIds((prev) => new Set([...prev, activeLectureId]));
+    }
+    if (result?.courseProgress) {
+      setUserProgress((prev) => ({
+        ...prev,
+        ...result.courseProgress,
+      }));
+    }
+  };
+
+  // Flattened lessons list for continuous learning navigation
+  const allLessons = (curriculum || []).flatMap((mod) => mod.lessons || []);
+  const currentLessonIndex = allLessons.findIndex((l) => l._id === activeLectureId);
+  const prevLesson = currentLessonIndex > 0 ? allLessons[currentLessonIndex - 1] : null;
+  const nextLesson = currentLessonIndex !== -1 && currentLessonIndex < allLessons.length - 1
+    ? allLessons[currentLessonIndex + 1]
+    : null;
+
+  const handleNextLesson = () => {
+    if (nextLesson) {
+      setActiveLectureId(nextLesson._id);
+    }
+  };
+
   return (
     <div className="learn-page" style={{ background: 'var(--bg-dark)', minHeight: 'calc(100vh - 80px)' }}>
       {/* TOP LEARNING HEADER & PROGRESS BAR */}
@@ -307,6 +335,8 @@ export default function Learn() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', overflow: 'hidden' }}>
                             {isCompleted ? (
                               <i className="fa-solid fa-circle-check" style={{ color: '#2ed573' }}></i>
+                            ) : les.type === 'quiz' ? (
+                              <i className="fa-solid fa-clipboard-question" style={{ color: isActive ? 'var(--cyan-primary)' : 'var(--text-muted)', fontSize: '0.85rem' }}></i>
                             ) : isActive ? (
                               <i className="fa-solid fa-play" style={{ color: 'var(--cyan-primary)', fontSize: '0.8rem' }}></i>
                             ) : (
@@ -358,110 +388,143 @@ export default function Learn() {
               </div>
             </div>
           ) : activeLecture ? (
-            /* LECTURE CONTENT VIEWER */
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-              
-              {/* VIDEO PLAYER CONTAINER */}
-              {(activeLecture.type === 'video' || activeLecture.type === 'lab_video') && (
-                <div style={{ background: '#000', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-glow)', marginBottom: '25px', boxShadow: 'var(--shadow-glow)' }}>
-                  {activeLecture.video ? (
-                    <video controls controlsList="nodownload" style={{ width: '100%', maxHeight: '560px', display: 'block' }} src={activeLecture.video}>
-                      Your browser does not support HTML5 video playback.
-                    </video>
-                  ) : (
-                    <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
-                      <i className="fa-solid fa-video-slash" style={{ fontSize: '2.5rem', marginBottom: '12px' }}></i>
-                      <p>No video URL attached to this lecture yet.</p>
-                    </div>
-                  )}
-                </div>
-              )}
+            activeLecture.type === 'quiz' ? (
+              /* INTERACTIVE QUIZ ASSESSMENT PLAYER */
+              <QuizPlayer
+                lecture={activeLecture}
+                isCompleted={isCurrentLessonCompleted}
+                onQuizPassed={handleQuizPassed}
+                onNextLesson={handleNextLesson}
+                hasNextLesson={Boolean(nextLesson)}
+              />
+            ) : (
+              /* STANDARD LECTURE CONTENT VIEWER (VIDEO / LAB / TEXT / PDF) */
+              <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+                {/* VIDEO PLAYER CONTAINER */}
+                {(activeLecture.type === 'video' || activeLecture.type === 'lab_video') && (
+                  <div style={{ background: '#000', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-glow)', marginBottom: '25px', boxShadow: 'var(--shadow-glow)' }}>
+                    {activeLecture.video ? (
+                      <video controls controlsList="nodownload" style={{ width: '100%', maxHeight: '560px', display: 'block' }} src={activeLecture.video}>
+                        Your browser does not support HTML5 video playback.
+                      </video>
+                    ) : (
+                      <div style={{ padding: '80px 20px', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        <i className="fa-solid fa-video-slash" style={{ fontSize: '2.5rem', marginBottom: '12px' }}></i>
+                        <p>No video URL attached to this lecture yet.</p>
+                      </div>
+                    )}
+                  </div>
+                )}
 
-              {/* LECTURE TITLE, COMPLETION ACTION & DETAILS */}
-              <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                    <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', border: '1px solid var(--border-glow)', textTransform: 'uppercase' }}>
-                      {activeLecture.type}
-                    </span>
-                    {activeLecture.preview && (
-                      <span style={{ color: '#2ed573', fontSize: '0.8rem', fontWeight: 'bold' }}>
-                        <i className="fa-solid fa-eye"></i> FREE PREVIEW
+                {/* LECTURE TITLE, COMPLETION ACTION & DETAILS */}
+                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+                      <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', border: '1px solid var(--border-glow)', textTransform: 'uppercase' }}>
+                        {activeLecture.type}
                       </span>
+                      {activeLecture.preview && (
+                        <span style={{ color: '#2ed573', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                          <i className="fa-solid fa-eye"></i> FREE PREVIEW
+                        </span>
+                      )}
+                    </div>
+
+                    {/* MARK AS COMPLETE / COMPLETED BUTTON */}
+                    {isAuthenticated && user?.role === 'student' && (
+                      <button
+                        onClick={handleMarkComplete}
+                        disabled={isCurrentLessonCompleted || markingComplete}
+                        className={`btn btn-sm ${isCurrentLessonCompleted ? 'btn-outline-green' : 'btn-cyan'}`}
+                        style={{
+                          padding: '8px 16px',
+                          fontSize: '0.88rem',
+                          background: isCurrentLessonCompleted ? 'rgba(46, 213, 115, 0.15)' : undefined,
+                          color: isCurrentLessonCompleted ? '#2ed573' : undefined,
+                          borderColor: isCurrentLessonCompleted ? '#2ed573' : undefined,
+                        }}
+                      >
+                        {markingComplete ? (
+                          <span><i className="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+                        ) : isCurrentLessonCompleted ? (
+                          <span><i className="fa-solid fa-circle-check"></i> Completed</span>
+                        ) : (
+                          <span><i className="fa-regular fa-circle-check"></i> Mark as Complete</span>
+                        )}
+                      </button>
                     )}
                   </div>
 
-                  {/* MARK AS COMPLETE / COMPLETED BUTTON */}
-                  {isAuthenticated && user?.role === 'student' && (
+                  <h1 style={{ color: 'var(--white)', fontSize: '1.8rem', marginBottom: '12px' }}>
+                    {activeLecture.title}
+                  </h1>
+
+                  {activeLecture.description && (
+                    <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: '1.6' }}>
+                      {activeLecture.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* TEXT CONTENT READING */}
+                {activeLecture.type === 'text' && activeLecture.content && (
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
+                    <h3 style={{ color: 'var(--white)', marginBottom: '15px', fontSize: '1.2rem' }}>
+                      <i className="fa-solid fa-book-open" style={{ color: 'var(--cyan-primary)', marginRight: '8px' }}></i> Lesson Reading Notes
+                    </h3>
+                    <div style={{ color: 'var(--text-muted)', lineHeight: '1.8', whiteSpace: 'pre-line' }}>
+                      {activeLecture.content}
+                    </div>
+                  </div>
+                )}
+
+                {/* DOWNLOADABLE RESOURCES */}
+                {activeLecture.resources && activeLecture.resources.length > 0 && (
+                  <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
+                    <h3 style={{ color: 'var(--white)', marginBottom: '15px', fontSize: '1.2rem' }}>
+                      <i className="fa-solid fa-download" style={{ color: 'var(--cyan-primary)', marginRight: '8px' }}></i> Practical Lab Resources & Attachments
+                    </h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      {activeLecture.resources.map((res, idx) => (
+                        <div key={idx} style={{ background: 'var(--bg-dark)', padding: '14px 18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <i className="fa-solid fa-file-pdf" style={{ color: 'var(--cyan-primary)', fontSize: '1.2rem' }}></i>
+                            <span style={{ color: 'var(--white)', fontSize: '0.92rem' }}>{res.title || `Resource ${idx + 1}`}</span>
+                          </div>
+                          <a href={res.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-cyan">
+                            <i className="fa-solid fa-download"></i> Download File
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* PREVIOUS / NEXT LESSON NAVIGATION CONTROLS */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', paddingTop: '20px', borderTop: '1px solid var(--border-subtle)', flexWrap: 'wrap', gap: '10px' }}>
+                  {prevLesson ? (
                     <button
-                      onClick={handleMarkComplete}
-                      disabled={isCurrentLessonCompleted || markingComplete}
-                      className={`btn btn-sm ${isCurrentLessonCompleted ? 'btn-outline-green' : 'btn-cyan'}`}
-                      style={{
-                        padding: '8px 16px',
-                        fontSize: '0.88rem',
-                        background: isCurrentLessonCompleted ? 'rgba(46, 213, 115, 0.15)' : undefined,
-                        color: isCurrentLessonCompleted ? '#2ed573' : undefined,
-                        borderColor: isCurrentLessonCompleted ? '#2ed573' : undefined,
-                      }}
+                      onClick={() => setActiveLectureId(prevLesson._id)}
+                      className="btn btn-sm btn-outline-cyan"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     >
-                      {markingComplete ? (
-                        <span><i className="fa-solid fa-spinner fa-spin"></i> Saving...</span>
-                      ) : isCurrentLessonCompleted ? (
-                        <span><i className="fa-solid fa-circle-check"></i> Completed</span>
-                      ) : (
-                        <span><i className="fa-regular fa-circle-check"></i> Mark as Complete</span>
-                      )}
+                      <i className="fa-solid fa-arrow-left"></i> Previous: {prevLesson.title}
+                    </button>
+                  ) : <div />}
+
+                  {nextLesson && (
+                    <button
+                      onClick={() => setActiveLectureId(nextLesson._id)}
+                      className="btn btn-sm btn-cyan"
+                      style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      Next: {nextLesson.title} <i className="fa-solid fa-arrow-right"></i>
                     </button>
                   )}
                 </div>
 
-                <h1 style={{ color: 'var(--white)', fontSize: '1.8rem', marginBottom: '12px' }}>
-                  {activeLecture.title}
-                </h1>
-
-                {activeLecture.description && (
-                  <p style={{ color: 'var(--text-muted)', fontSize: '1rem', lineHeight: '1.6' }}>
-                    {activeLecture.description}
-                  </p>
-                )}
               </div>
-
-              {/* TEXT CONTENT READING */}
-              {activeLecture.type === 'text' && activeLecture.content && (
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
-                  <h3 style={{ color: 'var(--white)', marginBottom: '15px', fontSize: '1.2rem' }}>
-                    <i className="fa-solid fa-book-open" style={{ color: 'var(--cyan-primary)', marginRight: '8px' }}></i> Lesson Reading Notes
-                  </h3>
-                  <div style={{ color: 'var(--text-muted)', lineHeight: '1.8', whiteSpace: 'pre-line' }}>
-                    {activeLecture.content}
-                  </div>
-                </div>
-              )}
-
-              {/* DOWNLOADABLE RESOURCES */}
-              {activeLecture.resources && activeLecture.resources.length > 0 && (
-                <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px' }}>
-                  <h3 style={{ color: 'var(--white)', marginBottom: '15px', fontSize: '1.2rem' }}>
-                    <i className="fa-solid fa-download" style={{ color: 'var(--cyan-primary)', marginRight: '8px' }}></i> Practical Lab Resources & Attachments
-                  </h3>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                    {activeLecture.resources.map((res, idx) => (
-                      <div key={idx} style={{ background: 'var(--bg-dark)', padding: '14px 18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <i className="fa-solid fa-file-pdf" style={{ color: 'var(--cyan-primary)', fontSize: '1.2rem' }}></i>
-                          <span style={{ color: 'var(--white)', fontSize: '0.92rem' }}>{res.title || `Resource ${idx + 1}`}</span>
-                        </div>
-                        <a href={res.url} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-cyan">
-                          <i className="fa-solid fa-download"></i> Download File
-                        </a>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
-            </div>
+            )
           ) : (
             <div style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
               Select a lecture from the curriculum sidebar on the left.

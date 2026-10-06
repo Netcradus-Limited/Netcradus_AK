@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1';
+import { API_BASE_URL } from '../config/api';
 
 async function handleResponse(response) {
   const result = await response.json();
@@ -46,6 +46,51 @@ export const adminService = {
    */
   async updateStudentStatus(id, status) {
     const response = await fetch(`${API_BASE_URL}/admin/students/${id}/status`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ status }),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Fetch instructor accounts list
+   */
+  async getInstructors(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status) query.append('status', params.status);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+
+    const url = `${API_BASE_URL}/admin/instructors?${query.toString()}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Create a new instructor account
+   */
+  async createInstructor(data) {
+    const response = await fetch(`${API_BASE_URL}/admin/instructors`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Toggle instructor account status (active ↔ disabled)
+   */
+  async updateInstructorStatus(id, status) {
+    const response = await fetch(`${API_BASE_URL}/admin/instructors/${id}/status`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -129,6 +174,19 @@ export const adminService = {
   },
 
   /**
+   * Manually enroll a student in a course
+   */
+  async createEnrollment(data) {
+    const response = await fetch(`${API_BASE_URL}/admin/enrollments`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
    * Update enrollment status
    */
   async updateEnrollmentStatus(id, status) {
@@ -137,6 +195,25 @@ export const adminService = {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify({ status }),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Fetch payment ledger transactions
+   */
+  async getPayments(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status) query.append('status', params.status);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+
+    const url = `${API_BASE_URL}/admin/payments?${query.toString()}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
     });
     return await handleResponse(response);
   },

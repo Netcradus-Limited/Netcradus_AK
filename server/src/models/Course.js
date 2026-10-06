@@ -58,9 +58,22 @@ const courseSchema = new mongoose.Schema(
       min: [0, 'Discount price cannot be negative'],
       validate: {
         validator: function (value) {
-          // 'this' refers to the document in updates or creation.
-          // Note: for update hooks, this might be undefined or different, but standard validation works on save.
-          return value === undefined || value === null || value <= this.price;
+          if (value === undefined || value === null) {
+            return true;
+          }
+          // Document context (creation or doc.save())
+          if (this && this.price !== undefined) {
+            return value <= this.price;
+          }
+          // Query context (findByIdAndUpdate / updateOne with runValidators)
+          if (this && typeof this.getUpdate === 'function') {
+            const update = this.getUpdate();
+            const updatePrice = update?.price ?? update?.$set?.price;
+            if (updatePrice !== undefined) {
+              return value <= updatePrice;
+            }
+          }
+          return true;
         },
         message: 'Discount price ({VALUE}) must be less than or equal to the original price',
       },

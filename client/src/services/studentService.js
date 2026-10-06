@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1';
+import { API_BASE_URL } from '../config/api';
 
 async function handleResponse(response) {
   const result = await response.json();
@@ -136,6 +136,23 @@ export const studentService = {
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
       body: JSON.stringify(payload),
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
+   * Submit quiz answers for a quiz lesson and receive score results
+   * @param {string} lessonId - Lesson ObjectId
+   * @param {Array<{ questionId: string, selectedOptionIndex: number }>} answers - Student answers
+   * @param {string} [startedAt] - Optional ISO timestamp when quiz was started
+   */
+  async submitQuiz(lessonId, answers, startedAt) {
+    const response = await fetch(`${API_BASE_URL}/student/lessons/${lessonId}/quiz-submit`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ answers, startedAt }),
     });
     const result = await handleResponse(response);
     return result.data;

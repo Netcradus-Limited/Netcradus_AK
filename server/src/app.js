@@ -82,6 +82,7 @@ const enrollmentRoutes = require('./routes/enrollmentRoutes');
 const inquiryRoutes = require('./routes/inquiryRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const studentRoutes = require('./routes/studentRoutes');
+const instructorRoutes = require('./routes/instructorRoutes');
 const lectureRoutes = require('./routes/lectureRoutes');
 const paymentRoutes = require('./routes/paymentRoutes');
 const certificateRoutes = require('./routes/certificateRoutes');
@@ -103,6 +104,7 @@ app.use('/api/v1/payments', paymentRoutes);
 app.use('/api/v1/certificates', certificateRoutes);
 app.use('/api/v1/inquiries', inquiryRoutes);
 app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/instructor', instructorRoutes);
 app.use('/api/v1/student', studentRoutes);
 app.use('/api/v1/lectures', lectureRoutes);
 

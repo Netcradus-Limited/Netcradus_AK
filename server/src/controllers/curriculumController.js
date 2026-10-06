@@ -4,6 +4,7 @@ const Lesson = require('../models/Lesson');
 const Course = require('../models/Course');
 const Enrollment = require('../models/Enrollment');
 const asyncHandler = require('../utils/asyncHandler');
+const { sanitizeLessonForStudent } = require('../utils/sanitizeLesson');
 const slugify = require('slugify');
 
 /**
@@ -153,11 +154,13 @@ exports.getLectureContent = asyncHandler(async (req, res) => {
 
   const isFreePreview = lesson.preview === true;
 
-  // 1. If Free Preview -> allow access to anyone
+  // 1. If Free Preview -> allow access to anyone (sanitizing quiz questions for non-admins)
   if (isFreePreview) {
     return res.status(200).json({
       success: true,
-      data: lesson,
+      data: (req.user && (req.user.role === 'admin' || req.user.role === 'super_admin'))
+        ? lesson
+        : sanitizeLessonForStudent(lesson),
     });
   }
 
@@ -193,7 +196,7 @@ exports.getLectureContent = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    data: lesson,
+    data: sanitizeLessonForStudent(lesson),
   });
 });
 

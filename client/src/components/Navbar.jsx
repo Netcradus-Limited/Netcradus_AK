@@ -53,6 +53,35 @@ export default function Navbar() {
                 </NavLink>
               </li>
             </>
+          ) : isAuthenticated && user?.role === 'instructor' ? (
+            /* INSTRUCTOR NAVBAR LINKS */
+            <>
+              <li className="nav-item">
+                <NavLink to="/instructor/dashboard" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  <i className="fa-solid fa-chalkboard-user" style={{ marginRight: '5px' }}></i> Instructor Portal
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu} end>
+                  Home
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/courses" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Courses
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/projects" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Projects
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/contact" className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`} onClick={closeMobileMenu}>
+                  Contact Us
+                </NavLink>
+              </li>
+            </>
           ) : isAuthenticated && user?.role === 'student' ? (
             /* STUDENT NAVBAR LINKS */
             <>
@@ -125,7 +154,7 @@ export default function Navbar() {
             <div className="user-nav-profile">
               <span className="user-profile-badge">
                 <i className="fa-regular fa-user-circle"></i>
-                {user?.fullName ? user.fullName.split(' ')[0] : 'Student'}
+                {user?.fullName ? user.fullName.split(' ')[0] : (user?.role === 'instructor' ? 'Instructor' : user?.role === 'admin' ? 'Admin' : 'User')}
               </span>
               <button
                 onClick={handleLogout}

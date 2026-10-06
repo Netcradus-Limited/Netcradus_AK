@@ -4,6 +4,7 @@ const Course = require('../models/Course');
 const Module = require('../models/Module');
 const Lesson = require('../models/Lesson');
 const Enrollment = require('../models/Enrollment');
+const Payment = require('../models/Payment');
 const Inquiry = require('../models/Inquiry');
 const Assignment = require('../models/Assignment');
 const Submission = require('../models/Submission');
@@ -152,6 +153,200 @@ exports.updateStudentStatus = asyncHandler(async (req, res) => {
 });
 
 /**
+ * Validate instructor eligibility for course assignment
+ */
+async function validateInstructorForAssignment(instructorId) {
+  if (instructorId === null || instructorId === undefined || instructorId === '') {
+    return { valid: true, instructorId: null };
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(instructorId)) {
+    return { valid: false, status: 400, message: 'Invalid instructor ID format.' };
+  }
+
+  const user = await User.findById(instructorId);
+  if (!user) {
+    return { valid: false, status: 400, message: 'Assigned instructor does not exist.' };
+  }
+
+  if (user.role !== 'instructor') {
+    return { valid: false, status: 400, message: 'Assigned user is not an instructor.' };
+  }
+
+  if (user.status !== 'active') {
+    return { valid: false, status: 400, message: 'Assigned instructor account is not active.' };
+  }
+
+  return { valid: true, instructorId: user._id };
+}
+
+/**
+ * @desc    Get all instructors (role = 'instructor') with search, status filter, and pagination
+ * @route   GET /api/v1/admin/instructors
+ * @access  Private (Admin / Super Admin)
+ */
+exports.getInstructors = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 20;
+  const skip = (page - 1) * limit;
+
+  const query = { role: 'instructor' };
+
+  if (req.query.status && req.query.status !== 'all') {
+    query.status = req.query.status;
+  }
+
+  if (req.query.search) {
+    const safeSearch = escapeRegex(req.query.search.trim());
+    if (safeSearch.length > 0) {
+      const searchRegex = new RegExp(safeSearch, 'i');
+      query.$or = [
+        { fullName: searchRegex },
+        { email: searchRegex },
+        { phone: searchRegex },
+      ];
+    }
+  }
+
+  const [instructors, total] = await Promise.all([
+    User.find(query)
+      .select('-password -passwordResetToken -passwordResetExpires')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    User.countDocuments(query),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    count: instructors.length,
+    total,
+    page,
+    pages: Math.ceil(total / limit),
+    data: instructors,
+  });
+});
+
+/**
+ * @desc    Create a new instructor account
+ * @route   POST /api/v1/admin/instructors
+ * @access  Private (Admin / Super Admin)
+ */
+exports.createInstructor = asyncHandler(async (req, res) => {
+  const { fullName, email, password, phone } = req.body;
+
+  if (!fullName || typeof fullName !== 'string' || !fullName.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Full name is required.',
+    });
+  }
+
+  if (!email || typeof email !== 'string' || !email.trim()) {
+    return res.status(400).json({
+      success: false,
+      message: 'Email address is required.',
+    });
+  }
+
+  const lowerEmail = email.toLowerCase().trim();
+  const emailRegex = /\S+@\S+\.\S+/;
+  if (!emailRegex.test(lowerEmail)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Please provide a valid email address.',
+    });
+  }
+
+  if (!password || typeof password !== 'string' || password.length < 8) {
+    return res.status(400).json({
+      success: false,
+      message: 'Temporary password is required and must be at least 8 characters long.',
+    });
+  }
+
+  const existingUser = await User.findOne({ email: lowerEmail });
+  if (existingUser) {
+    return res.status(400).json({
+      success: false,
+      message: `A user account with email '${lowerEmail}' already exists.`,
+    });
+  }
+
+  // Force role to 'instructor' - never allow client to supply role
+  const instructor = await User.create({
+    fullName: fullName.trim(),
+    email: lowerEmail,
+    password, // Automatically hashed by User pre-save hook
+    phone: phone ? phone.trim() : '',
+    role: 'instructor',
+    status: 'active',
+  });
+
+  res.status(201).json({
+    success: true,
+    message: `Instructor account for '${instructor.fullName}' created successfully.`,
+    data: {
+      _id: instructor._id,
+      fullName: instructor.fullName,
+      email: instructor.email,
+      phone: instructor.phone || '',
+      role: instructor.role,
+      status: instructor.status,
+      createdAt: instructor.createdAt,
+    },
+  });
+});
+
+/**
+ * @desc    Update instructor account status (active ↔ disabled)
+ * @route   PATCH /api/v1/admin/instructors/:id/status
+ * @access  Private (Admin / Super Admin)
+ */
+exports.updateInstructorStatus = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { status } = req.body;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid instructor ID format.',
+    });
+  }
+
+  if (!['active', 'disabled'].includes(status)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid status value. Allowed values: active, disabled.',
+    });
+  }
+
+  // Strictly target role === 'instructor' to prevent modifying students/admins/super_admins
+  const instructor = await User.findOne({ _id: id, role: 'instructor' });
+  if (!instructor) {
+    return res.status(404).json({
+      success: false,
+      message: 'Instructor account not found.',
+    });
+  }
+
+  instructor.status = status;
+  await instructor.save();
+
+  res.status(200).json({
+    success: true,
+    message: `Instructor account ${instructor.email} updated to '${status}'.`,
+    data: {
+      _id: instructor._id,
+      fullName: instructor.fullName,
+      email: instructor.email,
+      role: instructor.role,
+      status: instructor.status,
+    },
+  });
+});
+
+/**
  * @desc    Get all courses (including draft/unpublished) with search & category filter
  * @route   GET /api/v1/admin/courses
  * @access  Private (Admin / Super Admin)
@@ -180,7 +375,9 @@ exports.getAdminCourses = asyncHandler(async (req, res) => {
     }
   }
 
-  const courses = await Course.find(query).sort({ createdAt: -1 });
+  const courses = await Course.find(query)
+    .populate('instructor', 'fullName email _id status avatar')
+    .sort({ createdAt: -1 });
 
   res.status(200).json({
     success: true,
@@ -208,6 +405,7 @@ exports.createCourse = asyncHandler(async (req, res) => {
     published,
     featured,
     thumbnail,
+    instructor,
   } = req.body;
 
   if (!title || !slug || !category || !level || price === undefined) {
@@ -227,6 +425,19 @@ exports.createCourse = asyncHandler(async (req, res) => {
     });
   }
 
+  // Validate instructor if provided
+  let assignedInstructorId = null;
+  if (instructor !== undefined && instructor !== null && instructor !== '') {
+    const valResult = await validateInstructorForAssignment(instructor);
+    if (!valResult.valid) {
+      return res.status(valResult.status).json({
+        success: false,
+        message: valResult.message,
+      });
+    }
+    assignedInstructorId = valResult.instructorId;
+  }
+
   const newCourse = await Course.create({
     title: title.trim(),
     slug: cleanSlug,
@@ -234,6 +445,7 @@ exports.createCourse = asyncHandler(async (req, res) => {
     description: description ? description.trim() : '',
     category: category.trim(),
     level: level.trim(),
+    instructor: assignedInstructorId,
     price: Number(price),
     discountPrice: discountPrice !== undefined && discountPrice !== '' ? Number(discountPrice) : undefined,
     duration: duration ? duration.trim() : '8 Weeks',
@@ -242,10 +454,13 @@ exports.createCourse = asyncHandler(async (req, res) => {
     thumbnail: thumbnail ? thumbnail.trim() : '',
   });
 
+  const populatedCourse = await Course.findById(newCourse._id)
+    .populate('instructor', 'fullName email _id status avatar');
+
   res.status(201).json({
     success: true,
-    message: `Course '${newCourse.title}' created successfully.`,
-    data: newCourse,
+    message: `Course '${populatedCourse.title}' created successfully.`,
+    data: populatedCourse,
   });
 });
 
@@ -256,6 +471,13 @@ exports.createCourse = asyncHandler(async (req, res) => {
  */
 exports.updateCourse = asyncHandler(async (req, res) => {
   const { id } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid course ID format.',
+    });
+  }
 
   let course = await Course.findById(id);
   if (!course) {
@@ -274,13 +496,63 @@ exports.updateCourse = asyncHandler(async (req, res) => {
         message: `Slug '${cleanSlug}' is already used by another course.`,
       });
     }
-    req.body.slug = cleanSlug;
+    course.slug = cleanSlug;
   }
 
-  const updatedCourse = await Course.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  // Handle instructor assignment with strict validation
+  if (req.body.instructor !== undefined) {
+    if (req.body.instructor === null || req.body.instructor === '') {
+      course.instructor = null;
+    } else {
+      const valResult = await validateInstructorForAssignment(req.body.instructor);
+      if (!valResult.valid) {
+        return res.status(valResult.status).json({
+          success: false,
+          message: valResult.message,
+        });
+      }
+      course.instructor = valResult.instructorId;
+    }
+  }
+
+  // Explicit allowlist of editable course fields (prevents arbitrary injection)
+  const allowedFields = [
+    'title',
+    'shortDescription',
+    'description',
+    'thumbnail',
+    'category',
+    'level',
+    'language',
+    'price',
+    'discountPrice',
+    'currency',
+    'duration',
+    'requirements',
+    'learningOutcomes',
+    'skills',
+    'tags',
+    'published',
+    'featured',
+    'highlights',
+    'tools',
+    'cert',
+    'roles',
+    'prereq',
+    'bannerClass',
+    'bannerIcon',
+  ];
+
+  for (const field of allowedFields) {
+    if (req.body[field] !== undefined) {
+      course[field] = req.body[field];
+    }
+  }
+
+  await course.save();
+
+  const updatedCourse = await Course.findById(id)
+    .populate('instructor', 'fullName email _id status avatar');
 
   res.status(200).json({
     success: true,
@@ -375,6 +647,132 @@ exports.getAdminEnrollments = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Manually enroll a student in a course
+ * @route   POST /api/v1/admin/enrollments
+ * @access  Private (Admin / Super Admin)
+ */
+exports.createAdminEnrollment = asyncHandler(async (req, res) => {
+  const studentId = req.body.userId || req.body.studentId;
+  const { courseId } = req.body;
+
+  // 1. Validate Student ID presence and format
+  if (!studentId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Student ID is required.',
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(studentId)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid student ID format.',
+    });
+  }
+
+  // 2. Validate Course ID presence and format
+  if (!courseId) {
+    return res.status(400).json({
+      success: false,
+      message: 'Course ID is required.',
+    });
+  }
+
+  if (!mongoose.Types.ObjectId.isValid(courseId)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid course ID format.',
+    });
+  }
+
+  // 3. Find and validate student user
+  const student = await User.findById(studentId);
+  if (!student) {
+    return res.status(400).json({
+      success: false,
+      message: 'Student account not found.',
+    });
+  }
+
+  if (student.role !== 'student') {
+    return res.status(400).json({
+      success: false,
+      message: `Assigned user has role '${student.role}'. Only student accounts can be enrolled in courses.`,
+    });
+  }
+
+  if (student.status !== 'active') {
+    return res.status(400).json({
+      success: false,
+      message: 'Student account is disabled and cannot be enrolled.',
+    });
+  }
+
+  // 4. Find and validate target course
+  const course = await Course.findById(courseId);
+  if (!course) {
+    return res.status(400).json({
+      success: false,
+      message: 'Course not found.',
+    });
+  }
+
+  // 5. Duplicate enrollment protection check
+  const existingEnrollment = await Enrollment.findOne({
+    userId: student._id,
+    courseId: course._id,
+  });
+
+  if (existingEnrollment) {
+    if (['active', 'completed'].includes(existingEnrollment.status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Student '${student.fullName}' is already enrolled in '${course.title}' (Status: ${existingEnrollment.status}).`,
+      });
+    }
+
+    // Reactivate previous revoked/paused enrollment
+    existingEnrollment.status = 'active';
+    existingEnrollment.enrollmentType = 'manual';
+    existingEnrollment.pricePaid = 0;
+    existingEnrollment.currency = 'INR';
+    await existingEnrollment.save();
+
+    const populatedEnrollment = await Enrollment.findById(existingEnrollment._id)
+      .populate('userId', 'fullName email phone avatar status')
+      .populate('courseId', 'title slug category price level');
+
+    return res.status(201).json({
+      success: true,
+      message: `Successfully reactivated enrollment for '${student.fullName}' in '${course.title}'.`,
+      data: populatedEnrollment,
+    });
+  }
+
+  // 6. Create new manual enrollment (strictly enforcing server values, never trusting client overrides)
+  const newEnrollment = await Enrollment.create({
+    userId: student._id,
+    courseId: course._id,
+    enrollmentType: 'manual',
+    pricePaid: 0,
+    currency: 'INR',
+    status: 'active',
+    progressPercentage: 0,
+    completedLessons: [],
+  });
+
+  const populatedEnrollment = await Enrollment.findById(newEnrollment._id)
+    .populate('userId', 'fullName email phone avatar status')
+    .populate('courseId', 'title slug category price level');
+
+  res.status(201).json({
+    success: true,
+    message: `Student '${student.fullName}' enrolled successfully in '${course.title}'.`,
+    data: populatedEnrollment,
+  });
+});
+
+/**
  * @desc    Update Enrollment status (active, paused, completed, revoked)
  * @route   PATCH /api/v1/admin/enrollments/:id/status
  * @access  Private (Admin / Super Admin)
@@ -414,6 +812,81 @@ exports.updateEnrollmentStatus = asyncHandler(async (req, res) => {
     success: true,
     message: `Enrollment status updated to '${status}'.`,
     data: updated,
+  });
+});
+
+/**
+ * @desc    Get all Payment ledger records with pagination, filtering, and search
+ * @route   GET /api/v1/admin/payments
+ * @access  Private (Admin / Super Admin)
+ */
+exports.getAdminPayments = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page, 10) || 1;
+  const limit = parseInt(req.query.limit, 10) || 20;
+  const skip = (page - 1) * limit;
+
+  const query = {};
+
+  // Status filtering (only allow valid statuses from Payment schema)
+  const validStatuses = ['created', 'pending', 'paid', 'failed', 'refunded'];
+  if (req.query.status && req.query.status !== 'all') {
+    if (validStatuses.includes(req.query.status)) {
+      query.status = req.query.status;
+    } else {
+      // Handle invalid status safely without throwing or 500 error
+      query.status = '__invalid_status__';
+    }
+  }
+
+  // Safe search support (student name/email, order ID, payment ID, or Mongo ID)
+  if (req.query.search && typeof req.query.search === 'string') {
+    const rawSearch = req.query.search.trim();
+    const safeSearch = escapeRegex(rawSearch);
+    if (safeSearch.length > 0) {
+      const searchRegex = new RegExp(safeSearch, 'i');
+
+      // Find matching student user IDs
+      const matchedUsers = await User.find({
+        role: 'student',
+        $or: [{ fullName: searchRegex }, { email: searchRegex }],
+      }).select('_id');
+      const userIds = matchedUsers.map((u) => u._id);
+
+      const orConditions = [
+        { razorpayOrderId: searchRegex },
+        { razorpayPaymentId: searchRegex },
+      ];
+
+      if (userIds.length > 0) {
+        orConditions.push({ userId: { $in: userIds } });
+      }
+
+      if (mongoose.Types.ObjectId.isValid(rawSearch)) {
+        orConditions.push({ _id: rawSearch });
+      }
+
+      query.$or = orConditions;
+    }
+  }
+
+  const [payments, total] = await Promise.all([
+    Payment.find(query)
+      .populate('userId', '_id fullName email phone status')
+      .populate('courseId', '_id title slug category price level')
+      .select('-razorpaySignature')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Payment.countDocuments(query),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    count: payments.length,
+    total,
+    page,
+    pages: Math.ceil(total / limit) || 1,
+    data: payments,
   });
 });
 

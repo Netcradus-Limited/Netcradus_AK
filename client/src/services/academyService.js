@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1';
+import { API_BASE_URL } from '../config/api';
 
 /**
  * Centralized API Service for Netcradus Academy

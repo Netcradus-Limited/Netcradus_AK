@@ -8,6 +8,7 @@ const Certificate = require('../models/Certificate');
 const LiveSession = require('../models/LiveSession');
 const Assignment = require('../models/Assignment');
 const Submission = require('../models/Submission');
+const QuizAttempt = require('../models/QuizAttempt');
 const asyncHandler = require('../utils/asyncHandler');
 const { issueCertificateForEnrollment } = require('../services/certificateService');
 
@@ -800,6 +801,185 @@ exports.submitAssignment = asyncHandler(async (req, res) => {
         submittedAt: submission.submittedAt,
         gradedAt: submission.gradedAt,
       },
+    },
+  });
+});
+
+/**
+ * @desc    Submit quiz answers, compute score server-side, and save QuizAttempt
+ * @route   POST /api/v1/student/lessons/:id/quiz-submit
+ * @access  Private (Authenticated Student)
+ */
+exports.submitQuiz = asyncHandler(async (req, res) => {
+  const lessonId = req.params.id || req.params.lessonId;
+  const userId = req.user._id;
+
+  // 1. Validate lesson ID format
+  if (!mongoose.Types.ObjectId.isValid(lessonId)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid lesson identifier provided.',
+    });
+  }
+
+  // 2. Fetch lesson and verify it is a published quiz
+  const lesson = await Lesson.findById(lessonId);
+  if (!lesson || !lesson.published) {
+    return res.status(404).json({
+      success: false,
+      message: 'The requested quiz lesson was not found or is currently inactive.',
+    });
+  }
+
+  if (lesson.type !== 'quiz' || !Array.isArray(lesson.quiz) || lesson.quiz.length === 0) {
+    return res.status(400).json({
+      success: false,
+      message: 'The requested lesson is not a quiz or contains no questions.',
+    });
+  }
+
+  const courseId = lesson.courseId;
+
+  // 3. Verify student enrollment in MongoDB
+  const enrollment = await Enrollment.findOne({
+    userId,
+    courseId,
+    status: { $in: ['active', 'completed'] },
+  });
+
+  if (!enrollment) {
+    return res.status(403).json({
+      success: false,
+      message: 'Access denied. You must have an active enrollment in this course to take and submit this quiz.',
+    });
+  }
+
+  // 4. Abuse protection & question validation
+  const { answers, startedAt } = req.body;
+  const questionMap = new Map();
+  for (const q of lesson.quiz) {
+    questionMap.set(q._id.toString(), q);
+  }
+
+  if (answers.length !== lesson.quiz.length) {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid submission: You submitted ${answers.length} answers, but this quiz requires all ${lesson.quiz.length} questions to be answered.`,
+    });
+  }
+
+  const seenQuestionIds = new Set();
+  for (const ans of answers) {
+    const qIdStr = ans.questionId.toString();
+
+    if (seenQuestionIds.has(qIdStr)) {
+      return res.status(400).json({
+        success: false,
+        message: `Duplicate answer submitted for question ID '${ans.questionId}'.`,
+      });
+    }
+    seenQuestionIds.add(qIdStr);
+
+    const questionDoc = questionMap.get(qIdStr);
+    if (!questionDoc) {
+      return res.status(400).json({
+        success: false,
+        message: `Question ID '${ans.questionId}' does not belong to this quiz.`,
+      });
+    }
+
+    if (ans.selectedOptionIndex >= questionDoc.options.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Selected option index ${ans.selectedOptionIndex} is out of bounds for question '${questionDoc.question}'. Valid options range from 0 to ${questionDoc.options.length - 1}.`,
+      });
+    }
+  }
+
+  // 5. Server-side score & percentage calculation
+  let score = 0;
+  const processedAnswers = [];
+
+  for (const ans of answers) {
+    const questionDoc = questionMap.get(ans.questionId.toString());
+    const isCorrect = Number(ans.selectedOptionIndex) === Number(questionDoc.correctOptionIndex);
+    if (isCorrect) {
+      score += 1;
+    }
+
+    processedAnswers.push({
+      questionId: questionDoc._id,
+      selectedOptionIndex: ans.selectedOptionIndex,
+      isCorrect,
+    });
+  }
+
+  const totalQuestions = lesson.quiz.length;
+  const percentage = Math.round((score / totalQuestions) * 100);
+  const PASSING_THRESHOLD = 70;
+  const passed = percentage >= PASSING_THRESHOLD;
+
+  // 6. Record QuizAttempt with attempt count increment
+  const previousAttemptsCount = await QuizAttempt.countDocuments({
+    userId,
+    lessonId: lesson._id,
+  });
+  const attemptNumber = previousAttemptsCount + 1;
+
+  const quizAttempt = await QuizAttempt.create({
+    userId,
+    lessonId: lesson._id,
+    courseId,
+    answers: processedAnswers,
+    score,
+    totalQuestions,
+    percentage,
+    passed,
+    attemptNumber,
+    startedAt: startedAt ? new Date(startedAt) : new Date(),
+    submittedAt: new Date(),
+  });
+
+  // 7. Update course enrollment progress if quiz is passed
+  let progressMetrics = null;
+  if (passed) {
+    const lessonIdStr = lesson._id.toString();
+    const existingCompletedStrings = (enrollment.completedLessons || []).map((id) => id.toString());
+    if (!existingCompletedStrings.includes(lessonIdStr)) {
+      enrollment.completedLessons.push(lesson._id);
+    }
+    enrollment.lastAccessedLesson = lesson._id;
+    progressMetrics = await calculateEnrollmentProgress(enrollment);
+  }
+
+  // 8. Return safe results (NEVER expose correctOptionIndex)
+  res.status(200).json({
+    success: true,
+    message: passed
+      ? `Congratulations! You passed the quiz with ${percentage}%.`
+      : `Quiz submitted. You scored ${percentage}%. You need ${PASSING_THRESHOLD}% to pass.`,
+    data: {
+      attemptId: quizAttempt._id,
+      lessonId: lesson._id,
+      courseId,
+      attemptNumber,
+      score,
+      totalQuestions,
+      percentage,
+      passingThreshold: PASSING_THRESHOLD,
+      passed,
+      submittedAt: quizAttempt.submittedAt,
+      results: processedAnswers.map((a) => ({
+        questionId: a.questionId,
+        selectedOptionIndex: a.selectedOptionIndex,
+        isCorrect: a.isCorrect,
+      })),
+      courseProgress: progressMetrics ? {
+        progressPercentage: progressMetrics.progressPercentage,
+        completedLessonsCount: progressMetrics.completedLessonsCount,
+        totalLessons: progressMetrics.totalLessons,
+        status: progressMetrics.status,
+      } : undefined,
     },
   });
 });

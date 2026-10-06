@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const { protect, restrictTo } = require('../middleware/authMiddleware');
+const validate = require('../middleware/validate');
+const { quizSubmissionSchema } = require('../validators/quizValidator');
 const studentController = require('../controllers/studentController');
 
 // All endpoints in this router MUST require authentication & student role
@@ -69,5 +71,16 @@ router.get('/courses/:courseId/progress', studentController.getCourseProgress);
  * @access  Private (Authenticated Student)
  */
 router.post('/courses/:courseId/last-accessed', studentController.updateLastAccessed);
+
+/**
+ * @desc    Submit quiz answers and calculate score
+ * @route   POST /api/v1/student/lessons/:id/quiz-submit
+ * @access  Private (Authenticated Student)
+ */
+router.post(
+  '/lessons/:id/quiz-submit',
+  validate(quizSubmissionSchema, 'body'),
+  studentController.submitQuiz
+);
 
 module.exports = router;

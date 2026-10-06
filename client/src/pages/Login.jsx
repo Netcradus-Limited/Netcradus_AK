@@ -4,6 +4,7 @@ import AuthLayout from '../components/auth/AuthLayout';
 import PasswordInput from '../components/auth/PasswordInput';
 import { useApp } from '../App';
 import { useAuth } from '../context/AuthContext';
+import { getRoleHomePath } from '../utils/roleUtils';
 
 export default function Login() {
   const { showToast } = useApp();
@@ -52,11 +53,7 @@ export default function Login() {
         rememberMe: formData.rememberMe,
       });
       showToast(`Welcome back, ${user.fullName || 'User'}! Logged in successfully.`);
-      if (user?.role === 'admin' || user?.role === 'super_admin') {
-        navigate('/admin/dashboard', { replace: true });
-      } else {
-        navigate('/dashboard', { replace: true });
-      }
+      navigate(getRoleHomePath(user?.role), { replace: true });
     } catch (err) {
       setNotice({
         type: 'error',

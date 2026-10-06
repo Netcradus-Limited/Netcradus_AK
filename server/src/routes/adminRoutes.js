@@ -17,6 +17,11 @@ router.get('/dashboard-stats', adminController.getDashboardStats);
 router.get('/students', adminController.getStudents);
 router.patch('/students/:id/status', adminController.updateStudentStatus);
 
+// Instructor Management
+router.get('/instructors', adminController.getInstructors);
+router.post('/instructors', adminController.createInstructor);
+router.patch('/instructors/:id/status', adminController.updateInstructorStatus);
+
 // Course Management
 router.get('/courses', adminController.getAdminCourses);
 router.post('/courses', adminController.createCourse);
@@ -36,7 +41,11 @@ router.patch('/lectures/:lectureId/reorder', curriculumController.reorderLecture
 
 // Enrollment Management
 router.get('/enrollments', adminController.getAdminEnrollments);
+router.post('/enrollments', adminController.createAdminEnrollment);
 router.patch('/enrollments/:id/status', adminController.updateEnrollmentStatus);
+
+// Payment Ledger (Read-Only)
+router.get('/payments', adminController.getAdminPayments);
 
 // Inquiry / Lead Management
 router.get('/inquiries', adminController.getAdminInquiries);

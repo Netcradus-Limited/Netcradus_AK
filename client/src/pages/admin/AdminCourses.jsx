@@ -10,6 +10,7 @@ export default function AdminCourses() {
   const [error, setError] = useState(null);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
+  const [instructorsList, setInstructorsList] = useState([]);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -26,6 +27,7 @@ export default function AdminCourses() {
     description: '',
     category: 'CYBER SECURITY',
     level: 'Beginner to Advanced',
+    instructor: '',
     price: 99900, // stored in paise, e.g. ₹999
     discountPrice: 0,
     duration: '8 Weeks',
@@ -34,6 +36,15 @@ export default function AdminCourses() {
   };
 
   const [formData, setFormData] = useState(defaultFormData);
+
+  const fetchInstructors = async () => {
+    try {
+      const res = await adminService.getInstructors({ status: 'active', limit: 100 });
+      setInstructorsList(res.data || []);
+    } catch (err) {
+      console.warn('[AdminCourses] Failed to fetch instructors list:', err.message);
+    }
+  };
 
   const fetchCourses = async () => {
     setLoading(true);
@@ -54,6 +65,7 @@ export default function AdminCourses() {
 
   useEffect(() => {
     fetchCourses();
+    fetchInstructors();
   }, [search, categoryFilter]);
 
   const handleOpenCreateModal = () => {
@@ -72,6 +84,7 @@ export default function AdminCourses() {
       description: course.description || '',
       category: course.category || 'CYBER SECURITY',
       level: course.level || 'Beginner',
+      instructor: course.instructor ? (course.instructor._id || course.instructor) : '',
       price: course.price || 0,
       discountPrice: course.discountPrice || 0,
       duration: course.duration || '8 Weeks',
@@ -103,12 +116,17 @@ export default function AdminCourses() {
     }
 
     setSubmitting(true);
+    const payload = {
+      ...formData,
+      instructor: formData.instructor ? formData.instructor : null,
+    };
+
     try {
       if (editingCourse) {
-        await adminService.updateCourse(editingCourse._id, formData);
+        await adminService.updateCourse(editingCourse._id, payload);
         showToast(`Course '${formData.title}' updated successfully.`);
       } else {
-        await adminService.createCourse(formData);
+        await adminService.createCourse(payload);
         showToast(`Course '${formData.title}' created successfully.`);
       }
       setIsModalOpen(false);
@@ -207,6 +225,7 @@ export default function AdminCourses() {
                   <tr>
                     <th>Course Title</th>
                     <th>Category</th>
+                    <th>Instructor</th>
                     <th>Level</th>
                     <th>Price (INR)</th>
                     <th>Duration</th>
@@ -223,6 +242,25 @@ export default function AdminCourses() {
                       </td>
                       <td>
                         <span className="admin-badge info">{c.category}</span>
+                      </td>
+                      <td>
+                        {c.instructor ? (
+                          <div>
+                            <strong style={{ color: 'var(--text-main)', fontSize: '0.9rem' }}>
+                              {c.instructor.fullName}
+                            </strong>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                              {c.instructor.email}
+                            </div>
+                          </div>
+                        ) : (
+                          <span
+                            className="admin-badge warning"
+                            style={{ opacity: 0.85, fontSize: '0.75rem' }}
+                          >
+                            Unassigned
+                          </span>
+                        )}
                       </td>
                       <td>{c.level}</td>
                       <td>₹{(c.price / 100).toLocaleString('en-IN')}</td>
@@ -334,6 +372,25 @@ export default function AdminCourses() {
                     <option value="Networking">Networking</option>
                   </select>
                 </div>
+              </div>
+
+              <div className="form-group" style={{ marginBottom: '14px' }}>
+                <label>Assigned Faculty Instructor</label>
+                <select
+                  className="form-input"
+                  value={formData.instructor || ''}
+                  onChange={(e) => setFormData({ ...formData, instructor: e.target.value })}
+                >
+                  <option value="">-- No Instructor Assigned (Unassigned) --</option>
+                  {instructorsList.map((inst) => (
+                    <option key={inst._id} value={inst._id}>
+                      {inst.fullName} ({inst.email})
+                    </option>
+                  ))}
+                </select>
+                <small style={{ color: 'var(--text-muted)', display: 'block', marginTop: '4px' }}>
+                  Assigned instructor will manage this course's curriculum, assignments, and student roster.
+                </small>
               </div>
 
               <div className="form-row">

@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-export default function AdminSidebar({ mobileOpen, onCloseMobile }) {
+export default function InstructorSidebar({ mobileOpen, onCloseMobile }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -12,13 +12,11 @@ export default function AdminSidebar({ mobileOpen, onCloseMobile }) {
   };
 
   const navItems = [
-    { label: 'Dashboard', path: '/admin/dashboard', icon: 'fa-solid fa-chart-line' },
-    { label: 'Students', path: '/admin/students', icon: 'fa-solid fa-user-graduate' },
-    { label: 'Instructors', path: '/admin/instructors', icon: 'fa-solid fa-chalkboard-user' },
-    { label: 'Courses', path: '/admin/courses', icon: 'fa-solid fa-book-open' },
-    { label: 'Enrollments', path: '/admin/enrollments', icon: 'fa-solid fa-graduation-cap' },
-    { label: 'Payments', path: '/admin/payments', icon: 'fa-solid fa-receipt' },
-    { label: 'Inquiries', path: '/admin/inquiries', icon: 'fa-solid fa-envelope-open-text' },
+    { label: 'Dashboard', path: '/instructor/dashboard', icon: 'fa-solid fa-chart-line' },
+    { label: 'My Courses', path: '/instructor/courses', icon: 'fa-solid fa-book-open' },
+    { label: 'Submissions', path: '/instructor/submissions', icon: 'fa-solid fa-clipboard-check' },
+    { label: 'Students', path: '/instructor/students', icon: 'fa-solid fa-user-graduate' },
+    { label: 'Profile', path: '/instructor/profile', icon: 'fa-solid fa-id-badge' },
   ];
 
   return (
@@ -37,13 +35,15 @@ export default function AdminSidebar({ mobileOpen, onCloseMobile }) {
           <img src="/images/logo.png" alt="Netcradus Academy" className="admin-brand-logo" />
           <div className="admin-brand-text">
             <span className="admin-brand-name">Netcradus</span>
-            <span className="admin-brand-badge">ADMIN PANEL</span>
+            <span className="admin-brand-badge" style={{ color: 'var(--cyan-primary)' }}>
+              INSTRUCTOR PORTAL
+            </span>
           </div>
         </div>
 
         {/* Navigation Menu */}
         <nav className="admin-sidebar-nav">
-          <div className="admin-nav-section-label">MANAGEMENT</div>
+          <div className="admin-nav-section-label">TEACHING & MANAGEMENT</div>
           {navItems.map((item) => (
             <NavLink
               key={item.path}
@@ -62,12 +62,14 @@ export default function AdminSidebar({ mobileOpen, onCloseMobile }) {
         {/* User Info & Logout Footer */}
         <div className="admin-sidebar-footer">
           <div className="admin-user-pill">
-            <div className="admin-user-avatar">
-              <i className="fa-solid fa-user-shield"></i>
+            <div className="admin-user-avatar" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)' }}>
+              <i className="fa-solid fa-chalkboard-user"></i>
             </div>
             <div className="admin-user-details">
-              <span className="admin-user-name">{user?.fullName || 'Administrator'}</span>
-              <span className="admin-user-role">{user?.role || 'admin'}</span>
+              <span className="admin-user-name">{user?.fullName || 'Instructor'}</span>
+              <span className="admin-user-role" style={{ color: 'var(--cyan-primary)', textTransform: 'capitalize' }}>
+                {user?.role || 'Instructor'}
+              </span>
             </div>
           </div>
 
@@ -75,7 +77,7 @@ export default function AdminSidebar({ mobileOpen, onCloseMobile }) {
             type="button"
             onClick={handleLogout}
             className="admin-btn-logout"
-            title="Log out of Admin Session"
+            title="Log out of Instructor Session"
           >
             <i className="fa-solid fa-right-from-bracket"></i>
             <span>Logout</span>
