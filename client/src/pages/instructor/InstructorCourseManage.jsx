@@ -133,7 +133,7 @@ export default function InstructorCourseManage() {
         </div>
 
         <div className="admin-stat-card">
-          <div className="admin-stat-icon courses" style={{ background: 'rgba(0, 210, 255, 0.12)', color: 'var(--cyan-primary)' }}>
+          <div className="admin-stat-icon courses" style={{ background: 'rgba(245, 158, 11, 0.12)', color: 'var(--cyan-primary)' }}>
             <i className="fa-solid fa-sitemap"></i>
           </div>
           <div className="admin-stat-info">
@@ -158,7 +158,7 @@ export default function InstructorCourseManage() {
         {/* Curriculum Card */}
         <div className="admin-card" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', padding: '24px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(0, 210, 255, 0.12)', color: 'var(--cyan-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', marginBottom: '14px' }}>
+            <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.12)', color: 'var(--cyan-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', marginBottom: '14px' }}>
               <i className="fa-solid fa-sitemap"></i>
             </div>
             <h3 style={{ fontSize: '1.2rem', color: 'var(--white)', marginBottom: '8px' }}>Curriculum & Lectures</h3>

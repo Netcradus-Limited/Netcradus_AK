@@ -153,6 +153,7 @@ const verifyCertificate = asyncHandler(async (req, res) => {
       courseName: certificate.courseName,
       issueDate: certificate.issueDate,
       status: certificate.status, // 'active' or 'revoked'
+      revokedAt: certificate.revokedAt || null,
     },
   });
 });

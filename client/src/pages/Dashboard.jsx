@@ -343,7 +343,7 @@ export default function Dashboard() {
                         return (
                           <div key={item._id} className="dash-box" style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-md)', padding: '24px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                              <span className="dash-tag" style={{ background: 'rgba(0, 210, 255, 0.12)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)', fontSize: '0.75rem' }}>
+                              <span className="dash-tag" style={{ background: 'rgba(245, 158, 11, 0.12)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)', fontSize: '0.75rem' }}>
                                 {course.category || 'ACADEMY COURSE'}
                               </span>
                               <span className={`admin-badge ${item.status === 'active' ? 'success' : item.status === 'completed' ? 'info' : 'warning'}`}>
@@ -564,7 +564,7 @@ export default function Dashboard() {
 
                                 {/* Instructor feedback */}
                                 {submission?.feedback && (
-                                  <div className="instructor-feedback" style={{ color: isResubmission ? '#ffbd2e' : 'var(--cyan-primary)', marginTop: '8px', padding: '8px 12px', background: 'rgba(0, 210, 255, 0.05)', borderRadius: '4px', borderLeft: `3px solid ${isResubmission ? '#ffbd2e' : 'var(--cyan-primary)'}` }}>
+                                  <div className="instructor-feedback" style={{ color: isResubmission ? '#ffbd2e' : 'var(--cyan-primary)', marginTop: '8px', padding: '8px 12px', background: 'rgba(245, 158, 11, 0.05)', borderRadius: '4px', borderLeft: `3px solid ${isResubmission ? '#ffbd2e' : 'var(--cyan-primary)'}` }}>
                                     <i className="fa-solid fa-comment-dots"></i> <strong>Instructor Feedback:</strong> {submission.feedback}
                                   </div>
                                 )}
@@ -730,9 +730,9 @@ export default function Dashboard() {
                                 <span
                                   className="live-status-badge"
                                   style={{
-                                    background: isLive ? 'rgba(255, 71, 87, 0.2)' : isUpcoming ? 'rgba(0, 210, 255, 0.15)' : 'rgba(255, 255, 255, 0.08)',
+                                    background: isLive ? 'rgba(255, 71, 87, 0.2)' : isUpcoming ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.08)',
                                     color: isLive ? '#ff4757' : isUpcoming ? 'var(--cyan-primary)' : 'var(--text-muted)',
-                                    border: `1px solid ${isLive ? 'rgba(255, 71, 87, 0.4)' : isUpcoming ? 'rgba(0, 210, 255, 0.3)' : 'var(--border-subtle)'}`,
+                                    border: `1px solid ${isLive ? 'rgba(255, 71, 87, 0.4)' : isUpcoming ? 'rgba(245, 158, 11, 0.3)' : 'var(--border-subtle)'}`,
                                     display: 'inline-flex',
                                     alignItems: 'center',
                                     gap: '6px',
@@ -749,7 +749,7 @@ export default function Dashboard() {
                                 <span
                                   className="badge"
                                   style={{
-                                    background: 'rgba(0, 210, 255, 0.12)',
+                                    background: 'rgba(245, 158, 11, 0.12)',
                                     color: 'var(--cyan-primary)',
                                     border: '1px solid var(--border-glow)',
                                     fontSize: '0.75rem',
@@ -921,7 +921,7 @@ export default function Dashboard() {
                                     width: '46px',
                                     height: '46px',
                                     borderRadius: 'var(--radius-md)',
-                                    background: isPdf ? 'rgba(255, 71, 87, 0.12)' : 'rgba(0, 210, 255, 0.12)',
+                                    background: isPdf ? 'rgba(255, 71, 87, 0.12)' : 'rgba(245, 158, 11, 0.12)',
                                     border: `1px solid ${isPdf ? 'rgba(255, 71, 87, 0.3)' : 'var(--border-glow)'}`,
                                     display: 'flex',
                                     alignItems: 'center',
@@ -941,7 +941,7 @@ export default function Dashboard() {
                                     <span
                                       className="badge"
                                       style={{
-                                        background: isPdf ? 'rgba(255, 71, 87, 0.15)' : 'rgba(0, 210, 255, 0.15)',
+                                        background: isPdf ? 'rgba(255, 71, 87, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                                         color: isPdf ? '#ff4757' : 'var(--cyan-primary)',
                                         fontSize: '0.7rem',
                                         padding: '2px 6px',

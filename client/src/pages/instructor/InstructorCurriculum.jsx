@@ -534,7 +534,7 @@ export default function InstructorCurriculum() {
                               width: '30px',
                               height: '30px',
                               borderRadius: '6px',
-                              background: les.type === 'quiz' ? 'rgba(0, 210, 255, 0.15)' : 'rgba(255, 255, 255, 0.06)',
+                              background: les.type === 'quiz' ? 'rgba(245, 158, 11, 0.15)' : 'rgba(255, 255, 255, 0.06)',
                               color: les.type === 'quiz' ? 'var(--cyan-primary)' : 'var(--text-main)',
                               display: 'flex',
                               alignItems: 'center',

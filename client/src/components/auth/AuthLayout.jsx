@@ -99,10 +99,10 @@ export default function AuthLayout({
                     display: 'flex',
                     alignItems: 'flex-start',
                     gap: '16px',
-                    background: 'rgba(0, 210, 255, 0.04)',
+                    background: 'rgba(245, 158, 11, 0.04)',
                     padding: '16px',
                     borderRadius: 'var(--radius-md)',
-                    border: '1px solid rgba(0, 210, 255, 0.12)',
+                    border: '1px solid rgba(245, 158, 11, 0.12)',
                   }}
                 >
                   <div
@@ -110,7 +110,7 @@ export default function AuthLayout({
                       width: '42px',
                       height: '42px',
                       borderRadius: '10px',
-                      background: 'rgba(0, 210, 255, 0.15)',
+                      background: 'rgba(245, 158, 11, 0.15)',
                       color: 'var(--cyan-primary)',
                       display: 'flex',
                       alignItems: 'center',

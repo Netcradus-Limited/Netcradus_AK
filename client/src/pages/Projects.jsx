@@ -115,7 +115,7 @@ export default function Projects() {
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
                     <span style={{
-                      background: p.badgeBg || 'rgba(0, 210, 255, 0.12)',
+                      background: p.badgeBg || 'rgba(245, 158, 11, 0.12)',
                       color: p.badgeColor || 'var(--cyan-primary)',
                       padding: '4px 12px',
                       borderRadius: 'var(--radius-full)',

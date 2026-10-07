@@ -9,6 +9,7 @@ const Inquiry = require('../models/Inquiry');
 const Assignment = require('../models/Assignment');
 const Submission = require('../models/Submission');
 const LiveSession = require('../models/LiveSession');
+const Certificate = require('../models/Certificate');
 const asyncHandler = require('../utils/asyncHandler');
 const escapeRegex = require('../utils/escapeRegex');
 
@@ -18,44 +19,345 @@ const escapeRegex = require('../utils/escapeRegex');
  * @access  Private (Admin / Super Admin)
  */
 exports.getDashboardStats = asyncHandler(async (req, res) => {
+  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
   const [
+    // 1. User metrics
     totalStudents,
+    activeStudents,
+    totalInstructors,
+    activeInstructors,
+
+    // 2. Course metrics
     totalCourses,
-    activeCourses,
+    publishedCourses,
+    draftCourses,
+
+    // 3. Enrollment metrics
     totalEnrollments,
+    activeEnrollments,
+    completedEnrollments,
+    manualEnrollments,
+    paidEnrollments,
+
+    // 4. Submissions metrics
+    pendingSubmissions,
+    gradedSubmissions,
+    resubmissionRequested,
+
+    // 5. Inquiries
     pendingInquiries,
+
+    // 6. Payment status aggregations
+    paymentStatusAgg,
+
+    // 7. Recent payments time-bucket aggregation
+    recentPaymentAgg,
+
+    // 8. Enrollment count per course
+    enrollmentCourseAgg,
+
+    // 9. Payment revenue per course
+    paymentCourseAgg,
+
+    // 10. Submissions per course
+    submissionCourseAgg,
+
+    // 11. Courses with populated instructor
+    coursesList,
+
+    // 12. Instructors list
+    instructorsList,
+
+    // 13. Recent activities
     recentStudents,
     recentEnrollments,
     recentInquiries,
   ] = await Promise.all([
     User.countDocuments({ role: 'student' }),
+    User.countDocuments({ role: 'student', status: 'active' }),
+    User.countDocuments({ role: 'instructor' }),
+    User.countDocuments({ role: 'instructor', status: 'active' }),
+
     Course.countDocuments({}),
     Course.countDocuments({ published: true }),
+    Course.countDocuments({ published: false }),
+
     Enrollment.countDocuments({}),
+    Enrollment.countDocuments({ status: 'active' }),
+    Enrollment.countDocuments({ status: 'completed' }),
+    Enrollment.countDocuments({ enrollmentType: 'manual' }),
+    Enrollment.countDocuments({ enrollmentType: 'paid' }),
+
+    Submission.countDocuments({ status: 'submitted' }),
+    Submission.countDocuments({ status: 'graded' }),
+    Submission.countDocuments({ status: 'resubmission_requested' }),
+
     Inquiry.countDocuments({ status: 'new' }),
+
+    Payment.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          totalPaise: { $sum: '$amount' },
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+
+    Payment.aggregate([
+      {
+        $match: {
+          status: 'paid',
+          createdAt: { $gte: thirtyDaysAgo },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          last30DaysPaise: { $sum: '$amount' },
+          last7DaysPaise: {
+            $sum: {
+              $cond: [{ $gte: ['$createdAt', sevenDaysAgo] }, '$amount', 0],
+            },
+          },
+        },
+      },
+    ]),
+
+    Enrollment.aggregate([
+      {
+        $group: {
+          _id: '$courseId',
+          totalEnrollments: { $sum: 1 },
+          activeEnrollments: {
+            $sum: { $cond: [{ $eq: ['$status', 'active'] }, 1, 0] },
+          },
+          completedEnrollments: {
+            $sum: { $cond: [{ $eq: ['$status', 'completed'] }, 1, 0] },
+          },
+        },
+      },
+    ]),
+
+    Payment.aggregate([
+      { $match: { status: 'paid' } },
+      {
+        $group: {
+          _id: '$courseId',
+          paidAmountPaise: { $sum: '$amount' },
+        },
+      },
+    ]),
+
+    Submission.aggregate([
+      { $match: { status: 'submitted' } },
+      {
+        $group: {
+          _id: '$courseId',
+          count: { $sum: 1 },
+        },
+      },
+    ]),
+
+    Course.find({})
+      .populate('instructor', '_id fullName email')
+      .select('_id title slug category level price published instructor')
+      .lean(),
+
+    User.find({ role: 'instructor' })
+      .select('_id fullName email status avatar')
+      .lean(),
+
     User.find({ role: 'student' })
       .select('-password')
       .sort({ createdAt: -1 })
       .limit(5),
+
     Enrollment.find({})
       .populate('userId', 'fullName email phone avatar')
       .populate('courseId', 'title slug category price')
       .sort({ createdAt: -1 })
       .limit(5),
+
     Inquiry.find({})
       .sort({ createdAt: -1 })
       .limit(5),
   ]);
+
+  // Process financial aggregations
+  const statusMap = {};
+  for (const item of paymentStatusAgg) {
+    statusMap[item._id] = {
+      totalPaise: item.totalPaise || 0,
+      count: item.count || 0,
+    };
+  }
+
+  const grossRevenuePaise = statusMap['paid']?.totalPaise || 0;
+  const grossRevenueRupees = Math.round((grossRevenuePaise / 100) * 100) / 100;
+  const successfulPaymentsCount = statusMap['paid']?.count || 0;
+
+  const refundedAmountPaise = statusMap['refunded']?.totalPaise || 0;
+  const refundedAmountRupees = Math.round((refundedAmountPaise / 100) * 100) / 100;
+  const refundedPaymentsCount = statusMap['refunded']?.count || 0;
+
+  const failedPaymentsCount = statusMap['failed']?.count || 0;
+  const pendingPaymentsCount = (statusMap['pending']?.count || 0) + (statusMap['created']?.count || 0);
+
+  const averageTransactionValueRupees =
+    successfulPaymentsCount > 0
+      ? Math.round((grossRevenueRupees / successfulPaymentsCount) * 100) / 100
+      : 0;
+
+  const recentFinancial = recentPaymentAgg[0] || {};
+  const last30DaysRupees = Math.round(((recentFinancial.last30DaysPaise || 0) / 100) * 100) / 100;
+  const last7DaysRupees = Math.round(((recentFinancial.last7DaysPaise || 0) / 100) * 100) / 100;
+
+  // Process course metrics maps
+  const courseEnrollmentMap = {};
+  for (const item of enrollmentCourseAgg) {
+    courseEnrollmentMap[item._id.toString()] = {
+      totalEnrollments: item.totalEnrollments || 0,
+      activeEnrollments: item.activeEnrollments || 0,
+      completedEnrollments: item.completedEnrollments || 0,
+    };
+  }
+
+  const coursePaymentMap = {};
+  for (const item of paymentCourseAgg) {
+    coursePaymentMap[item._id.toString()] = item.paidAmountPaise || 0;
+  }
+
+  const courseSubmissionMap = {};
+  for (const item of submissionCourseAgg) {
+    courseSubmissionMap[item._id.toString()] = item.count || 0;
+  }
+
+  // Build coursePerformance list
+  const coursePerformance = coursesList.map((c) => {
+    const cId = c._id.toString();
+    const enrollData = courseEnrollmentMap[cId] || {
+      totalEnrollments: 0,
+      activeEnrollments: 0,
+      completedEnrollments: 0,
+    };
+    const paidPaise = coursePaymentMap[cId] || 0;
+    const revenueRupees = Math.round((paidPaise / 100) * 100) / 100;
+    const completionRate =
+      enrollData.totalEnrollments > 0
+        ? Math.round((enrollData.completedEnrollments / enrollData.totalEnrollments) * 1000) / 10
+        : 0;
+
+    return {
+      courseId: c._id,
+      title: c.title,
+      slug: c.slug,
+      category: c.category,
+      published: !!c.published,
+      instructor: c.instructor
+        ? {
+            id: c.instructor._id,
+            fullName: c.instructor.fullName,
+            email: c.instructor.email,
+          }
+        : null,
+      totalEnrollments: enrollData.totalEnrollments,
+      activeEnrollments: enrollData.activeEnrollments,
+      completedEnrollments: enrollData.completedEnrollments,
+      completionRate,
+      revenueRupees,
+      pendingSubmissions: courseSubmissionMap[cId] || 0,
+    };
+  });
+
+  // Top courses ranked by total enrollments descending (tie-break by revenue)
+  const topCourses = [...coursePerformance]
+    .sort((a, b) => {
+      if (b.totalEnrollments !== a.totalEnrollments) {
+        return b.totalEnrollments - a.totalEnrollments;
+      }
+      return b.revenueRupees - a.revenueRupees;
+    })
+    .slice(0, 5);
+
+  // Build instructorAnalytics
+  const instructorAnalytics = instructorsList.map((inst) => {
+    const instId = inst._id.toString();
+    const instCourses = coursePerformance.filter(
+      (c) => c.instructor && c.instructor.id.toString() === instId
+    );
+
+    const assignedCoursesCount = instCourses.length;
+    const publishedCoursesCount = instCourses.filter((c) => c.published).length;
+    const totalStudentsCount = instCourses.reduce((sum, c) => sum + c.totalEnrollments, 0);
+    const completedStudentsCount = instCourses.reduce((sum, c) => sum + c.completedEnrollments, 0);
+    const pendingSubmissionsCount = instCourses.reduce((sum, c) => sum + c.pendingSubmissions, 0);
+    const attributableRevenueRupees = instCourses.reduce((sum, c) => sum + c.revenueRupees, 0);
+
+    return {
+      instructorId: inst._id,
+      fullName: inst.fullName,
+      email: inst.email,
+      status: inst.status,
+      assignedCoursesCount,
+      publishedCoursesCount,
+      totalStudentsCount,
+      completedStudentsCount,
+      pendingSubmissionsCount,
+      attributableRevenueRupees,
+    };
+  });
 
   res.status(200).json({
     success: true,
     data: {
       stats: {
         totalStudents,
+        activeStudents,
+        totalInstructors,
+        activeInstructors,
         totalCourses,
-        activeCourses,
+        activeCourses: publishedCourses,
+        publishedCourses,
+        draftCourses,
         totalEnrollments,
+        activeEnrollments,
+        completedEnrollments,
+        manualEnrollments,
+        paidEnrollments,
+        pendingSubmissions,
+        gradedSubmissions,
+        resubmissionRequested,
         pendingInquiries,
+      },
+      financial: {
+        grossRevenuePaise,
+        grossRevenueRupees,
+        successfulPaymentsCount,
+        refundedAmountPaise,
+        refundedAmountRupees,
+        refundedPaymentsCount,
+        failedPaymentsCount,
+        pendingPaymentsCount,
+        averageTransactionValueRupees,
+        currency: 'INR',
+        periodMetrics: {
+          last30DaysRupees,
+          last7DaysRupees,
+          comparisonText: 'No comparison available',
+        },
+      },
+      coursePerformance,
+      topCourses,
+      instructorAnalytics,
+      operationalOverview: {
+        pendingSubmissions,
+        resubmissionRequested,
+        activeInstructors,
+        activeEnrollments,
+        draftCourses,
       },
       recentActivity: {
         recentStudents,
@@ -1464,5 +1766,165 @@ exports.gradeSubmission = asyncHandler(async (req, res) => {
       submittedAt: submission.submittedAt,
       gradedAt: submission.gradedAt,
     },
+  });
+});
+
+/**
+ * @desc    Get all Certificates with pagination, filtering, and search
+ * @route   GET /api/v1/admin/certificates
+ * @access  Private (Admin / Super Admin)
+ */
+exports.getAdminCertificates = asyncHandler(async (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit, 10) || 20));
+  const skip = (page - 1) * limit;
+
+  const query = {};
+
+  // Status filtering (only allow valid statuses: 'active', 'revoked')
+  const validStatuses = ['active', 'revoked'];
+  if (req.query.status && req.query.status !== 'all') {
+    if (validStatuses.includes(req.query.status)) {
+      query.status = req.query.status;
+    } else {
+      query.status = '__invalid_status__';
+    }
+  }
+
+  // Course filtering (optional)
+  if (req.query.courseId) {
+    if (mongoose.Types.ObjectId.isValid(req.query.courseId)) {
+      query.courseId = req.query.courseId;
+    } else {
+      query.courseId = new mongoose.Types.ObjectId();
+    }
+  }
+
+  // Safe search support (certificate ID, student name snapshot/user, course title snapshot/course, student email)
+  if (req.query.search && typeof req.query.search === 'string') {
+    const rawSearch = req.query.search.trim();
+    const safeSearch = escapeRegex(rawSearch);
+    if (safeSearch.length > 0) {
+      const searchRegex = new RegExp(safeSearch, 'i');
+
+      // Find matching student user IDs by fullName or email
+      const matchedUsers = await User.find({
+        role: 'student',
+        $or: [{ fullName: searchRegex }, { email: searchRegex }],
+      }).select('_id');
+      const userIds = matchedUsers.map((u) => u._id);
+
+      // Find matching courses by title
+      const matchedCourses = await Course.find({
+        title: searchRegex,
+      }).select('_id');
+      const courseIds = matchedCourses.map((c) => c._id);
+
+      const orConditions = [
+        { certificateId: searchRegex },
+        { studentName: searchRegex },
+        { courseName: searchRegex },
+      ];
+
+      if (userIds.length > 0) {
+        orConditions.push({ userId: { $in: userIds } });
+      }
+
+      if (courseIds.length > 0) {
+        orConditions.push({ courseId: { $in: courseIds } });
+      }
+
+      if (mongoose.Types.ObjectId.isValid(rawSearch)) {
+        orConditions.push({ _id: rawSearch });
+      }
+
+      query.$or = orConditions;
+    }
+  }
+
+  const [certificates, total] = await Promise.all([
+    Certificate.find(query)
+      .populate('userId', '_id fullName email avatar status')
+      .populate('courseId', '_id title slug category price level')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit),
+    Certificate.countDocuments(query),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    count: certificates.length,
+    total,
+    page,
+    pages: Math.ceil(total / limit) || 1,
+    data: certificates,
+  });
+});
+
+/**
+ * @desc    Revoke an active Certificate
+ * @route   PATCH /api/v1/admin/certificates/:id/revoke
+ * @access  Private (Admin / Super Admin)
+ */
+exports.revokeCertificate = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { reason, revocationReason } = req.body || {};
+  const actualReason = (typeof reason === 'string' && reason.trim()) ||
+                       (typeof revocationReason === 'string' && revocationReason.trim()) || '';
+
+  // 1. Validate and locate certificate
+  let certificate = null;
+  if (mongoose.Types.ObjectId.isValid(id)) {
+    certificate = await Certificate.findById(id);
+  }
+  if (!certificate && typeof id === 'string') {
+    certificate = await Certificate.findOne({ certificateId: id.trim().toUpperCase() });
+  }
+
+  if (!certificate) {
+    return res.status(404).json({
+      success: false,
+      message: 'Certificate not found.',
+    });
+  }
+
+  // 2. Prevent duplicate revocation
+  if (certificate.status === 'revoked') {
+    return res.status(400).json({
+      success: false,
+      message: 'Certificate is already revoked.',
+      data: {
+        certificateId: certificate.certificateId,
+        status: certificate.status,
+        revokedAt: certificate.revokedAt,
+        revocationReason: certificate.revocationReason,
+      },
+    });
+  }
+
+  // 3. Require meaningful revocation reason
+  if (!actualReason || actualReason.length < 3) {
+    return res.status(400).json({
+      success: false,
+      message: 'A meaningful revocation reason (at least 3 characters) is required.',
+    });
+  }
+
+  // 4. Strict server-side mutation using explicit field allowlist
+  certificate.status = 'revoked';
+  certificate.revokedAt = new Date();
+  certificate.revocationReason = actualReason.slice(0, 1000);
+
+  await certificate.save();
+
+  const populated = await Certificate.findById(certificate._id)
+    .populate('userId', '_id fullName email avatar status')
+    .populate('courseId', '_id title slug category price level');
+
+  res.status(200).json({
+    success: true,
+    message: `Certificate '${certificate.certificateId}' has been revoked successfully.`,
+    data: populated,
   });
 });

@@ -11,6 +11,7 @@ export default function AdminCourses() {
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [instructorsList, setInstructorsList] = useState([]);
+  const [categoriesList, setCategoriesList] = useState([]);
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -46,6 +47,17 @@ export default function AdminCourses() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await adminService.getCategories({ isActive: true });
+      if (res.data && res.data.length > 0) {
+        setCategoriesList(res.data);
+      }
+    } catch (err) {
+      console.warn('[AdminCourses] Failed to fetch categories list:', err.message);
+    }
+  };
+
   const fetchCourses = async () => {
     setLoading(true);
     setError(null);
@@ -66,6 +78,7 @@ export default function AdminCourses() {
   useEffect(() => {
     fetchCourses();
     fetchInstructors();
+    fetchCategories();
   }, [search, categoryFilter]);
 
   const handleOpenCreateModal = () => {
@@ -275,7 +288,7 @@ export default function AdminCourses() {
                           <Link
                             to={`/admin/courses/${c._id}/curriculum`}
                             className="btn-admin-action"
-                            style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)' }}
+                            style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)' }}
                             title="Manage Course Curriculum & Lectures"
                           >
                             <i className="fa-solid fa-list-check"></i> Curriculum
@@ -283,7 +296,7 @@ export default function AdminCourses() {
                           <Link
                             to={`/admin/courses/${c._id}/assignments`}
                             className="btn-admin-action"
-                            style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)' }}
+                            style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)', border: '1px solid var(--border-glow)' }}
                             title="Manage Course Assignments & Grade Submissions"
                           >
                             <i className="fa-solid fa-pen-to-square"></i> Assignments
@@ -365,11 +378,21 @@ export default function AdminCourses() {
                     value={formData.category}
                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   >
-                    <option value="Cyber Security">Cyber Security</option>
-                    <option value="Cloud">Cloud</option>
-                    <option value="AI/ML">AI/ML</option>
-                    <option value="Linux">Linux</option>
-                    <option value="Networking">Networking</option>
+                    {categoriesList.length > 0 ? (
+                      categoriesList.map((cat) => (
+                        <option key={cat._id} value={cat.name}>
+                          {cat.name}
+                        </option>
+                      ))
+                    ) : (
+                      <>
+                        <option value="Cyber Security">Cyber Security</option>
+                        <option value="Cloud">Cloud</option>
+                        <option value="AI/ML">AI/ML</option>
+                        <option value="Linux">Linux</option>
+                        <option value="Networking">Networking</option>
+                      </>
+                    )}
                   </select>
                 </div>
               </div>

@@ -190,7 +190,7 @@ export default function InstructorSubmissions() {
                       width: '36px',
                       height: '36px',
                       borderRadius: '50%',
-                      background: 'rgba(0, 210, 255, 0.12)',
+                      background: 'rgba(245, 158, 11, 0.12)',
                       color: 'var(--cyan-primary)',
                       display: 'flex',
                       alignItems: 'center',
@@ -259,10 +259,10 @@ export default function InstructorSubmissions() {
                         color: 'var(--cyan-primary)',
                         fontSize: '0.85rem',
                         textDecoration: 'none',
-                        background: 'rgba(0, 210, 255, 0.08)',
+                        background: 'rgba(245, 158, 11, 0.08)',
                         padding: '4px 10px',
                         borderRadius: '4px',
-                        border: '1px solid rgba(0, 210, 255, 0.2)',
+                        border: '1px solid rgba(245, 158, 11, 0.2)',
                       }}
                     >
                       <i className="fa-brands fa-github"></i> View Student Repository

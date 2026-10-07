@@ -99,7 +99,7 @@ export default function MyCourses() {
                   width: '80px',
                   height: '80px',
                   borderRadius: '50%',
-                  background: 'rgba(0, 210, 255, 0.1)',
+                  background: 'rgba(245, 158, 11, 0.1)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',

@@ -30,13 +30,13 @@ export default function InstructorProfile() {
               width: '70px',
               height: '70px',
               borderRadius: '50%',
-              background: 'rgba(0, 210, 255, 0.15)',
+              background: 'rgba(245, 158, 11, 0.15)',
               color: 'var(--cyan-primary)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '2rem',
-              border: '2px solid rgba(0, 210, 255, 0.3)',
+              border: '2px solid rgba(245, 158, 11, 0.3)',
             }}
           >
             <i className="fa-solid fa-chalkboard-user"></i>
@@ -53,7 +53,7 @@ export default function InstructorProfile() {
                   borderRadius: '12px',
                   fontSize: '0.75rem',
                   fontWeight: 600,
-                  background: 'rgba(0, 210, 255, 0.15)',
+                  background: 'rgba(245, 158, 11, 0.15)',
                   color: 'var(--cyan-primary)',
                   textTransform: 'uppercase',
                 }}

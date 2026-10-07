@@ -62,7 +62,7 @@ export default function InstructorSidebar({ mobileOpen, onCloseMobile }) {
         {/* User Info & Logout Footer */}
         <div className="admin-sidebar-footer">
           <div className="admin-user-pill">
-            <div className="admin-user-avatar" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)' }}>
+            <div className="admin-user-avatar" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)' }}>
               <i className="fa-solid fa-chalkboard-user"></i>
             </div>
             <div className="admin-user-details">

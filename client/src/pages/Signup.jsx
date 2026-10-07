@@ -32,7 +32,7 @@ export default function Signup() {
 
     if (score <= 1) return { score: 1, label: 'Weak', color: '#ff4757' };
     if (score === 2 || score === 3) return { score: 2, label: 'Medium', color: '#ffa502' };
-    return { score: 3, label: 'Strong', color: '#00d2ff' };
+    return { score: 3, label: 'Strong', color: '#f59e0b' };
   };
 
   const strength = getPasswordStrength(formData.password);
@@ -119,7 +119,7 @@ export default function Signup() {
       {notice && (
         <div
           style={{
-            background: notice.type === 'error' ? 'rgba(255, 50, 50, 0.1)' : 'rgba(0, 210, 255, 0.08)',
+            background: notice.type === 'error' ? 'rgba(255, 50, 50, 0.1)' : 'rgba(245, 158, 11, 0.08)',
             color: notice.type === 'error' ? '#ff4757' : 'var(--cyan-primary)',
             padding: '12px 16px',
             borderRadius: 'var(--radius-sm)',

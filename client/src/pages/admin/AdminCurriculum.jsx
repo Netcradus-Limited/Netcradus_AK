@@ -32,6 +32,7 @@ export default function AdminCurriculum() {
     content: '',
     pdf: '',
     resources: [],
+    quiz: [],
   });
 
   const [submitting, setSubmitting] = useState(false);
@@ -131,10 +132,11 @@ export default function AdminCurriculum() {
       durationSeconds: 600,
       preview: false,
       published: true,
-      video: 'https://www.w3schools.com/html/mov_bbb.mp4',
+      video: '',
       content: '',
       pdf: '',
       resources: [],
+      quiz: [],
     });
     setShowLectureModal(true);
   };
@@ -153,21 +155,136 @@ export default function AdminCurriculum() {
       content: lec.content || '',
       pdf: lec.pdf || '',
       resources: lec.resources || [],
+      quiz: Array.isArray(lec.quiz) ? JSON.parse(JSON.stringify(lec.quiz)) : [],
     });
     setShowLectureModal(true);
   };
 
+  // --- QUIZ BUILDER HELPERS FOR ADMIN ---
+  const handleAddQuestion = () => {
+    setLectureForm((prev) => ({
+      ...prev,
+      quiz: [
+        ...prev.quiz,
+        {
+          question: '',
+          options: ['', ''],
+          correctOptionIndex: 0,
+        },
+      ],
+    }));
+  };
+
+  const handleRemoveQuestion = (qIdx) => {
+    setLectureForm((prev) => ({
+      ...prev,
+      quiz: prev.quiz.filter((_, idx) => idx !== qIdx),
+    }));
+  };
+
+  const handleQuestionTextChange = (qIdx, text) => {
+    setLectureForm((prev) => {
+      const updatedQuiz = [...prev.quiz];
+      updatedQuiz[qIdx].question = text;
+      return { ...prev, quiz: updatedQuiz };
+    });
+  };
+
+  const handleOptionTextChange = (qIdx, optIdx, text) => {
+    setLectureForm((prev) => {
+      const updatedQuiz = [...prev.quiz];
+      const updatedOptions = [...updatedQuiz[qIdx].options];
+      updatedOptions[optIdx] = text;
+      updatedQuiz[qIdx].options = updatedOptions;
+      return { ...prev, quiz: updatedQuiz };
+    });
+  };
+
+  const handleAddOption = (qIdx) => {
+    setLectureForm((prev) => {
+      const updatedQuiz = [...prev.quiz];
+      updatedQuiz[qIdx].options = [...updatedQuiz[qIdx].options, ''];
+      return { ...prev, quiz: updatedQuiz };
+    });
+  };
+
+  const handleRemoveOption = (qIdx, optIdx) => {
+    setLectureForm((prev) => {
+      const updatedQuiz = [...prev.quiz];
+      if (updatedQuiz[qIdx].options.length <= 2) {
+        showToast('A question must have at least 2 options.');
+        return prev;
+      }
+      const updatedOptions = updatedQuiz[qIdx].options.filter((_, idx) => idx !== optIdx);
+      updatedQuiz[qIdx].options = updatedOptions;
+      if (updatedQuiz[qIdx].correctOptionIndex >= updatedOptions.length) {
+        updatedQuiz[qIdx].correctOptionIndex = 0;
+      }
+      return { ...prev, quiz: updatedQuiz };
+    });
+  };
+
+  const handleSelectCorrectOption = (qIdx, optIdx) => {
+    setLectureForm((prev) => {
+      const updatedQuiz = [...prev.quiz];
+      updatedQuiz[qIdx].correctOptionIndex = optIdx;
+      return { ...prev, quiz: updatedQuiz };
+    });
+  };
+
   const handleSaveLecture = async (e) => {
     e.preventDefault();
-    if (!lectureForm.title.trim()) return;
+    if (!lectureForm.title.trim()) {
+      showToast('Lecture title is required.');
+      return;
+    }
+
+    // Quiz validations
+    if (lectureForm.type === 'quiz') {
+      if (!lectureForm.quiz || lectureForm.quiz.length === 0) {
+        showToast('A quiz assessment must have at least one question.');
+        return;
+      }
+      for (let i = 0; i < lectureForm.quiz.length; i += 1) {
+        const q = lectureForm.quiz[i];
+        if (!q.question || !q.question.trim()) {
+          showToast(`Question #${i + 1} title cannot be blank.`);
+          return;
+        }
+        if (!Array.isArray(q.options) || q.options.length < 2) {
+          showToast(`Question #${i + 1} must have at least 2 options.`);
+          return;
+        }
+        for (let j = 0; j < q.options.length; j += 1) {
+          if (!q.options[j] || !q.options[j].trim()) {
+            showToast(`Question #${i + 1}, Option ${String.fromCharCode(65 + j)} cannot be empty.`);
+            return;
+          }
+        }
+        if (
+          q.correctOptionIndex === undefined ||
+          q.correctOptionIndex === null ||
+          q.correctOptionIndex < 0 ||
+          q.correctOptionIndex >= q.options.length
+        ) {
+          showToast(`Please select the correct answer for Question #${i + 1}.`);
+          return;
+        }
+      }
+    }
 
     setSubmitting(true);
     try {
+      const payload = {
+        ...lectureForm,
+        quiz: lectureForm.type === 'quiz' ? lectureForm.quiz : [],
+      };
+
       if (editingLecture) {
-        await adminService.updateLecture(editingLecture._id, lectureForm);
+        await adminService.updateLecture(editingLecture._id, payload);
         showToast('Lecture updated successfully!');
       } else {
-        await adminService.createLecture(targetModuleId, lectureForm);
+        await adminService.createLecture(targetModuleId, payload);
         showToast('Lecture created successfully!');
       }
       setShowLectureModal(false);
@@ -253,7 +370,7 @@ export default function AdminCurriculum() {
               {/* MODULE HEADER BAR */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
                 <div>
-                  <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', marginRight: '10px' }}>
+                  <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', marginRight: '10px' }}>
                     MODULE {mod.order}
                   </span>
                   <strong style={{ fontSize: '1.2rem', color: 'var(--white)' }}>{mod.title}</strong>
@@ -295,12 +412,15 @@ export default function AdminCurriculum() {
                     <div key={lec._id} style={{ background: 'var(--bg-dark)', padding: '14px 18px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <span style={{ color: 'var(--cyan-primary)', fontSize: '1.1rem' }}>
-                          <i className={`fa-solid ${lec.type === 'lab_video' ? 'fa-flask' : lec.type === 'text' ? 'fa-file-lines' : 'fa-circle-play'}`}></i>
+                          <i className={`fa-solid ${lec.type === 'quiz' ? 'fa-list-check' : lec.type === 'lab_video' ? 'fa-flask' : lec.type === 'text' ? 'fa-file-lines' : 'fa-circle-play'}`}></i>
                         </span>
                         <div>
                           <strong style={{ color: 'var(--white)', fontSize: '0.98rem' }}>{lec.title}</strong>
                           <div style={{ display: 'flex', gap: '10px', marginTop: '4px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                             <span style={{ textTransform: 'uppercase', background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: '4px' }}>{lec.type}</span>
+                            {lec.type === 'quiz' && Array.isArray(lec.quiz) && (
+                              <span style={{ color: 'var(--cyan-primary)' }}><i className="fa-solid fa-circle-question"></i> {lec.quiz.length} Questions</span>
+                            )}
                             {lec.durationSeconds > 0 && <span><i className="fa-regular fa-clock"></i> {Math.round(lec.durationSeconds / 60)} mins</span>}
                             {lec.preview && <span style={{ color: '#2ed573', fontWeight: 'bold' }}><i className="fa-solid fa-eye"></i> FREE PREVIEW</span>}
                             {!lec.published && <span style={{ color: 'var(--warning-color)' }}><i className="fa-solid fa-eye-slash"></i> UNPUBLISHED</span>}
@@ -379,6 +499,7 @@ export default function AdminCurriculum() {
                     <option value="text">📖 Reading / Text</option>
                     <option value="pdf">📄 PDF Document</option>
                     <option value="resource">📥 External Resource</option>
+                    <option value="quiz">📝 Interactive Quiz Assessment</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -398,6 +519,117 @@ export default function AdminCurriculum() {
                 <div className="form-group" style={{ marginBottom: '15px' }}>
                   <label style={{ color: 'var(--text-muted)', display: 'block', marginBottom: '6px' }}>Text Content (Markdown / Text)</label>
                   <textarea className="form-control" rows="5" value={lectureForm.content} onChange={(e) => setLectureForm({ ...lectureForm, content: e.target.value })} placeholder="Lesson reading text..."></textarea>
+                </div>
+              )}
+
+              {lectureForm.type === 'quiz' && (
+                <div style={{ borderTop: '1px solid var(--border-subtle)', paddingTop: '16px', marginTop: '16px', marginBottom: '16px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                    <h4 style={{ color: 'var(--cyan-primary)', fontSize: '0.95rem', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <i className="fa-solid fa-list-check"></i>
+                      Quiz Questions ({lectureForm.quiz ? lectureForm.quiz.length : 0})
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={handleAddQuestion}
+                      className="btn btn-sm btn-outline-cyan"
+                      style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                    >
+                      <i className="fa-solid fa-plus"></i> Add Question
+                    </button>
+                  </div>
+
+                  {(!lectureForm.quiz || lectureForm.quiz.length === 0) ? (
+                    <div style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)', background: 'rgba(0,0,0,0.2)', borderRadius: '4px', fontSize: '0.85rem' }}>
+                      No questions configured yet. Click "+ Add Question" to configure quiz questions.
+                    </div>
+                  ) : (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                      {lectureForm.quiz.map((q, qIdx) => (
+                        <div
+                          key={qIdx}
+                          style={{
+                            padding: '14px',
+                            background: 'rgba(0,0,0,0.25)',
+                            border: '1px solid var(--border-subtle)',
+                            borderRadius: 'var(--radius-sm)',
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.85rem', color: 'var(--cyan-primary)' }}>
+                              Question #{qIdx + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveQuestion(qIdx)}
+                              style={{ background: 'none', border: 'none', color: '#eb4d4b', cursor: 'pointer', fontSize: '0.8rem' }}
+                              title="Delete Question"
+                            >
+                              <i className="fa-solid fa-trash"></i> Delete Question
+                            </button>
+                          </div>
+
+                          <input
+                            type="text"
+                            value={q.question}
+                            onChange={(e) => handleQuestionTextChange(qIdx, e.target.value)}
+                            placeholder="Enter question text here..."
+                            className="form-control"
+                            style={{ marginBottom: '10px' }}
+                          />
+
+                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '6px' }}>
+                            Options (Choose radio button for the correct answer):
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '10px' }}>
+                            {q.options.map((opt, optIdx) => (
+                              <div key={optIdx} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <input
+                                  type="radio"
+                                  name={`admin-correct-opt-${qIdx}`}
+                                  checked={q.correctOptionIndex === optIdx}
+                                  onChange={() => handleSelectCorrectOption(qIdx, optIdx)}
+                                  title="Mark as correct answer"
+                                  style={{ accentColor: '#2ed573', cursor: 'pointer', width: '16px', height: '16px' }}
+                                />
+                                <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-muted)', width: '18px' }}>
+                                  {String.fromCharCode(65 + optIdx)}.
+                                </span>
+                                <input
+                                  type="text"
+                                  value={opt}
+                                  onChange={(e) => handleOptionTextChange(qIdx, optIdx, e.target.value)}
+                                  placeholder={`Option ${String.fromCharCode(65 + optIdx)}`}
+                                  className="form-control"
+                                  style={{ flex: 1, padding: '6px 10px', fontSize: '0.85rem' }}
+                                />
+                                {q.options.length > 2 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveOption(qIdx, optIdx)}
+                                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}
+                                    title="Remove option"
+                                  >
+                                    <i className="fa-solid fa-xmark"></i>
+                                  </button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handleAddOption(qIdx)}
+                            className="btn btn-sm btn-outline-cyan"
+                            style={{ padding: '3px 8px', fontSize: '0.75rem' }}
+                          >
+                            <i className="fa-solid fa-plus"></i> Add Option
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

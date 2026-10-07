@@ -121,7 +121,7 @@ export default function CourseDetail() {
           contact: user?.phone || '',
         },
         theme: {
-          color: '#00f2fe',
+          color: '#f59e0b',
         },
         modal: {
           ondismiss: () => {
@@ -329,7 +329,7 @@ export default function CourseDetail() {
                       </h4>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {course.tools.map((t, idx) => (
-                          <span key={idx} style={{ background: 'rgba(0, 210, 255, 0.1)', color: 'var(--cyan-primary)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', border: '1px solid var(--border-glow)' }}>
+                          <span key={idx} style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--cyan-primary)', padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', border: '1px solid var(--border-glow)' }}>
                             {t}
                           </span>
                         ))}

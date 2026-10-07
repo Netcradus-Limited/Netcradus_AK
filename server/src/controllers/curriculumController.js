@@ -5,6 +5,7 @@ const Course = require('../models/Course');
 const Enrollment = require('../models/Enrollment');
 const asyncHandler = require('../utils/asyncHandler');
 const { sanitizeLessonForStudent } = require('../utils/sanitizeLesson');
+const { validateQuizQuestions } = require('../utils/quizValidator');
 const slugify = require('slugify');
 
 /**
@@ -392,13 +393,42 @@ exports.reorderModule = asyncHandler(async (req, res) => {
 });
 
 /**
+ * @desc    Get single lecture details for Admin management (includes quiz correct answers)
+ * @route   GET /api/v1/admin/lectures/:lectureId
+ * @access  Private (Admin & Super Admin)
+ */
+exports.getAdminLecture = asyncHandler(async (req, res) => {
+  const { lectureId } = req.params;
+
+  if (!mongoose.Types.ObjectId.isValid(lectureId)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid lecture identifier provided.',
+    });
+  }
+
+  const lesson = await Lesson.findById(lectureId).populate('courseId', 'title slug');
+  if (!lesson) {
+    return res.status(404).json({
+      success: false,
+      message: 'The requested lecture was not found.',
+    });
+  }
+
+  res.status(200).json({
+    success: true,
+    data: lesson,
+  });
+});
+
+/**
  * @desc    Create a new lecture in a module
  * @route   POST /api/v1/admin/modules/:moduleId/lectures
  * @access  Private (Admin & Super Admin)
  */
 exports.createLecture = asyncHandler(async (req, res) => {
   const { moduleId } = req.params;
-  const { title, description, type, durationSeconds, order, preview, published, video, content, pdf, resources } = req.body;
+  const { title, description, type, durationSeconds, order, preview, published, video, content, pdf, resources, quiz } = req.body;
 
   if (!title || !title.trim()) {
     return res.status(400).json({ success: false, message: 'Lecture title is required.' });
@@ -407,6 +437,14 @@ exports.createLecture = asyncHandler(async (req, res) => {
   const moduleDoc = await Module.findById(moduleId);
   if (!moduleDoc) {
     return res.status(404).json({ success: false, message: 'Parent module not found.' });
+  }
+
+  // Quiz-specific validation if lesson is of type quiz
+  if (type === 'quiz' && quiz !== undefined) {
+    const quizError = validateQuizQuestions(quiz);
+    if (quizError) {
+      return res.status(400).json({ success: false, message: quizError });
+    }
   }
 
   let lectureOrder = order;
@@ -432,6 +470,7 @@ exports.createLecture = asyncHandler(async (req, res) => {
     content: content || '',
     pdf: pdf ? pdf.trim() : '',
     resources: Array.isArray(resources) ? resources : [],
+    quiz: type === 'quiz' && Array.isArray(quiz) ? quiz : [],
   });
 
   res.status(201).json({
@@ -448,11 +487,25 @@ exports.createLecture = asyncHandler(async (req, res) => {
  */
 exports.updateLecture = asyncHandler(async (req, res) => {
   const { lectureId } = req.params;
-  const { title, description, type, durationSeconds, order, preview, published, video, content, pdf, resources } = req.body;
+  const { title, description, type, durationSeconds, order, preview, published, video, content, pdf, resources, quiz } = req.body;
 
   const lesson = await Lesson.findById(lectureId);
   if (!lesson) {
     return res.status(404).json({ success: false, message: 'Lecture not found.' });
+  }
+
+  const effectiveType = type !== undefined ? type : lesson.type;
+
+  if (quiz !== undefined) {
+    if (effectiveType === 'quiz') {
+      const quizError = validateQuizQuestions(quiz);
+      if (quizError) {
+        return res.status(400).json({ success: false, message: quizError });
+      }
+      lesson.quiz = quiz;
+    } else {
+      lesson.quiz = [];
+    }
   }
 
   if (title !== undefined) {

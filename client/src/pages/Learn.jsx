@@ -323,7 +323,7 @@ export default function Learn() {
                             justifyContent: 'space-between',
                             padding: '10px 12px',
                             borderRadius: 'var(--radius-sm)',
-                            background: isActive ? 'rgba(0, 210, 255, 0.15)' : isCompleted ? 'rgba(46, 213, 115, 0.05)' : 'transparent',
+                            background: isActive ? 'rgba(245, 158, 11, 0.15)' : isCompleted ? 'rgba(46, 213, 115, 0.05)' : 'transparent',
                             border: isActive ? '1px solid var(--border-glow)' : '1px solid transparent',
                             color: isActive ? 'var(--white)' : isCompleted ? 'var(--text-main)' : 'var(--text-muted)',
                             cursor: 'pointer',
@@ -420,7 +420,7 @@ export default function Learn() {
                 <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-glow)', borderRadius: 'var(--radius-lg)', padding: '30px', marginBottom: '25px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '15px', marginBottom: '12px' }}>
                     <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-                      <span className="badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', border: '1px solid var(--border-glow)', textTransform: 'uppercase' }}>
+                      <span className="badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)', fontSize: '0.75rem', border: '1px solid var(--border-glow)', textTransform: 'uppercase' }}>
                         {activeLecture.type}
                       </span>
                       {activeLecture.preview && (

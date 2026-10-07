@@ -1,0 +1,577 @@
+/* ==========================================================================
+   PIONEER / NETCRADUS ABOUT PAGE STYLES
+   Faithfully matched to reference layout & color palette
+   ========================================================================== */
+
+.pioneer-about-wrapper {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  font-family: inherit;
+}
+
+/* --------------------------------------------------------------------------
+   1. HERO SECTION ("INNOVATION is our tradition")
+   -------------------------------------------------------------------------- */
+.pioneer-hero-section {
+  position: relative;
+  background: linear-gradient(180deg, #070b14 0%, #0b1120 40%, #10172a 80%, #152238 100%);
+  padding: 80px 24px 100px;
+  color: #ffffff;
+  overflow: hidden;
+}
+
+/* Starry space particle effects */
+.pioneer-stars-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: 
+    radial-gradient(1.5px 1.5px at 15% 20%, rgba(255, 255, 255, 0.95), transparent),
+    radial-gradient(1px 1px at 30% 10%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(2px 2px at 45% 25%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 60% 15%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(2px 2px at 75% 30%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1.5px 1.5px at 90% 12%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1px 1px at 20% 70%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 80% 65%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(2px 2px at 88% 80%, rgba(255, 255, 255, 0.8), transparent);
+  background-repeat: repeat;
+  background-size: 400px 300px;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* Shooting star effect */
+.shooting-star {
+  position: absolute;
+  top: 15%;
+  right: 35%;
+  width: 140px;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.9), rgba(236, 72, 153, 0.4), transparent);
+  transform: rotate(-35deg);
+  opacity: 0.75;
+  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.8));
+  pointer-events: none;
+}
+
+.pioneer-hero-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 48px;
+  position: relative;
+  z-index: 2;
+}
+
+.pioneer-hero-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+.pioneer-telescope-img-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 25px 60px -15px rgba(15, 6, 40, 0.7), 0 0 40px rgba(245, 158, 11, 0.25);
+  animation: floatBook 6s ease-in-out infinite;
+  transition: transform 0.4s ease;
+}
+
+.pioneer-telescope-img-wrapper:hover {
+  transform: translateY(-6px) scale(1.01);
+}
+
+.pioneer-telescope-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+@keyframes floatBook {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.pioneer-hero-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 20px;
+}
+
+.pioneer-hero-title {
+  font-size: clamp(2.8rem, 5vw, 4.2rem);
+  font-weight: 800;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  color: #ffffff;
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
+}
+
+.pioneer-hero-subtitle {
+  font-size: clamp(1.4rem, 2.5vw, 2rem);
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0 0 32px 0;
+  letter-spacing: 0.5px;
+}
+
+.btn-pioneer-explore {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ea580c 100%);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 12px 36px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+}
+
+.btn-pioneer-explore:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(245, 158, 11, 0.6);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   2. ABOUT US SECTION (Rich Royal Violet Gradient)
+   -------------------------------------------------------------------------- */
+.pioneer-about-section {
+  position: relative;
+  background: linear-gradient(180deg, #0b1120 0%, #10172a 35%, #152035 70%, #1a2742 100%);
+  padding: 90px 24px 110px;
+  color: #ffffff;
+}
+
+.pioneer-about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  align-items: center;
+  gap: 56px;
+}
+
+.pioneer-about-container.full-width {
+  max-width: 1100px;
+  grid-template-columns: 1fr;
+  gap: 32px;
+}
+
+.pioneer-about-text-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.pioneer-about-heading {
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 24px 0;
+  line-height: 1.2;
+}
+
+.pioneer-about-desc {
+  font-size: 1.12rem;
+  line-height: 1.95;
+  color: rgba(255, 255, 255, 0.95);
+  margin-bottom: 24px;
+  max-width: 100%;
+  letter-spacing: 0.2px;
+}
+
+/* 4 Core Domain Pillars */
+.about-cyber-pillars-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  width: 100%;
+  margin: 12px 0 24px;
+}
+
+.cyber-pillar-card {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 14px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(8px);
+}
+
+.cyber-pillar-card:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(245, 158, 11, 0.6);
+  transform: translateY(-4px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.pillar-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.18);
+  color: #fbbf24;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  margin-bottom: 14px;
+  border: 1px solid rgba(245, 158, 11, 0.35);
+  transition: transform 0.3s ease;
+}
+
+.cyber-pillar-card:hover .pillar-icon {
+  transform: scale(1.1);
+  background: rgba(245, 158, 11, 0.35);
+}
+
+.pillar-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.3px;
+}
+
+@media (max-width: 960px) {
+  .about-cyber-pillars-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 540px) {
+  .about-cyber-pillars-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.pioneer-about-extra {
+  font-size: 1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.88);
+  margin-bottom: 28px;
+  max-width: 620px;
+  padding: 16px 20px;
+  background: rgba(255, 255, 255, 0.08);
+  border-left: 3px solid #f59e0b;
+  border-radius: 0 12px 12px 0;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.btn-pioneer-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: #ffffff;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 6px;
+  padding: 10px 26px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-pioneer-outline:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  color: #ffffff;
+}
+
+.pioneer-about-visual-col {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.pioneer-student-img-wrapper {
+  width: 100%;
+  max-width: 440px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px -10px rgba(25, 12, 60, 0.55), 0 0 30px rgba(255, 255, 255, 0.1);
+  transition: transform 0.4s ease;
+}
+
+.pioneer-student-img-wrapper:hover {
+  transform: scale(1.02);
+}
+
+.pioneer-student-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+}
+
+/* --------------------------------------------------------------------------
+   3. OUR FACILITIES SECTION (Clean Crisp White Background)
+   -------------------------------------------------------------------------- */
+.pioneer-facilities-section {
+  position: relative;
+  background: #ffffff;
+  padding: 90px 24px 110px;
+  color: #1e1b4b;
+}
+
+.pioneer-facilities-container {
+  max-width: 1240px;
+  margin: 0 auto;
+}
+
+.pioneer-facilities-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 50px;
+}
+
+.pioneer-facilities-title {
+  font-size: clamp(2.2rem, 3.5vw, 3rem);
+  font-weight: 800;
+  color: #1f1854;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.pioneer-carousel-controls {
+  display: flex;
+  gap: 12px;
+}
+
+.carousel-nav-btn {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  font-size: 1rem;
+}
+
+.carousel-nav-btn:hover {
+  background: #f59e0b; color: #ffffff; border-color: #f59e0b;
+  transform: scale(1.05);
+}
+
+.pioneer-facilities-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 36px;
+}
+
+.pioneer-facility-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 24px 20px 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.pioneer-facility-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 35px -10px rgba(31, 24, 84, 0.12);
+  border-color: rgba(245, 158, 11, 0.35);
+}
+
+.facility-img-box {
+  width: 100%;
+  max-width: 240px;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.facility-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.4s ease;
+}
+
+.pioneer-facility-card:hover .facility-img {
+  transform: scale(1.05);
+}
+
+.facility-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #1f1854;
+  margin: 0 0 14px 0;
+}
+
+.facility-desc {
+  font-size: 0.95rem;
+  line-height: 1.65;
+  color: #475569;
+  margin: 0 0 24px 0;
+  min-height: 72px;
+}
+
+.btn-facility-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 22px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin-top: auto;
+  text-decoration: none;
+}
+
+.btn-facility-outline:hover {
+  background: #f59e0b; color: #ffffff; border-color: #f59e0b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(31, 24, 84, 0.15);
+}
+
+.btn-apply-online {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #ea580c 100%);
+  color: #ffffff;
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  padding: 10px 28px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+  transition: all 0.25s ease;
+  text-decoration: none;
+}
+
+.btn-apply-online:hover {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 22px rgba(245, 158, 11, 0.55);
+  color: #ffffff;
+}
+
+/* --------------------------------------------------------------------------
+   5. RESPONSIVE MEDIA QUERIES
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .pioneer-hero-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 40px;
+  }
+
+  .pioneer-hero-content {
+    align-items: center;
+    padding-left: 0;
+  }
+
+  .pioneer-about-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 48px;
+  }
+
+  .pioneer-about-text-col {
+    align-items: center;
+  }
+
+  .pioneer-facilities-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .pioneer-hero-section {
+    padding: 60px 16px 80px;
+  }
+
+  .pioneer-about-section {
+    padding: 70px 16px 80px;
+  }
+
+  .pioneer-facilities-section {
+    padding: 70px 16px 80px;
+  }
+
+  .pioneer-facilities-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .pioneer-facilities-grid {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  .facility-desc {
+    min-height: auto;
+  }
+}

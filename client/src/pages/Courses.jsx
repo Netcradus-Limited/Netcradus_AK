@@ -91,12 +91,12 @@ export default function Courses() {
             <div className="courses-grid" id="coursesGridLoading">
               {[1, 2, 3, 4, 5, 6].map((idx) => (
                 <div key={idx} className="course-card" style={{ opacity: 0.75, minHeight: '380px' }}>
-                  <div className="course-banner cyber-bg" style={{ height: '170px', background: 'rgba(0, 210, 255, 0.05)' }}>
+                  <div className="course-banner cyber-bg" style={{ height: '170px', background: 'rgba(245, 158, 11, 0.05)' }}>
                     <div style={{ width: '40%', height: '20px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px' }}></div>
                   </div>
                   <div className="course-content">
                     <div style={{ width: '80%', height: '24px', background: 'rgba(255,255,255,0.1)', borderRadius: '4px', marginBottom: '15px' }}></div>
-                    <div style={{ width: '60%', height: '16px', background: 'rgba(0,210,255,0.15)', borderRadius: '4px', marginBottom: '20px' }}></div>
+                    <div style={{ width: '60%', height: '16px', background: 'rgba(245, 158, 11,0.15)', borderRadius: '4px', marginBottom: '20px' }}></div>
                     <div style={{ width: '100%', height: '14px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '10px' }}></div>
                     <div style={{ width: '90%', height: '14px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', marginBottom: '20px' }}></div>
                   </div>

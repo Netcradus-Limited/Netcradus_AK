@@ -77,7 +77,7 @@ export default function Login() {
       {notice && (
         <div
           style={{
-            background: notice.type === 'error' ? 'rgba(255, 50, 50, 0.1)' : 'rgba(0, 210, 255, 0.08)',
+            background: notice.type === 'error' ? 'rgba(255, 50, 50, 0.1)' : 'rgba(245, 158, 11, 0.08)',
             color: notice.type === 'error' ? '#ff4757' : 'var(--cyan-primary)',
             padding: '12px 16px',
             borderRadius: 'var(--radius-sm)',

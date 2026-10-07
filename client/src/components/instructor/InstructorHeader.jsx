@@ -20,7 +20,7 @@ export default function InstructorHeader({ title, onToggleMobile }) {
 
       <div className="admin-header-right">
         <div className="admin-header-user">
-          <div className="admin-avatar-badge" style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)' }}>
+          <div className="admin-avatar-badge" style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)' }}>
             <i className="fa-solid fa-chalkboard-user"></i>
           </div>
           <div className="admin-user-info">

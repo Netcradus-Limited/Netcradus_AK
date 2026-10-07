@@ -146,6 +146,18 @@ export default function Certificate() {
                     <div className="rd-row"><span>Certificate ID:</span><code>{certData.certificateId}</code></div>
                     <div className="rd-row"><span>Issue Date:</span><strong>{formattedDate}</strong></div>
                     <div className="rd-row"><span>Status:</span><strong style={{ color: certData.status === 'active' ? '#2ed573' : '#ff4757', textTransform: 'uppercase' }}>{certData.status}</strong></div>
+                    {certData.revokedAt && (
+                      <div className="rd-row">
+                        <span>Revocation Date:</span>
+                        <strong style={{ color: '#ff4757' }}>
+                          {new Date(certData.revokedAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric',
+                          })}
+                        </strong>
+                      </div>
+                    )}
                     <div className="rd-row"><span>Accreditation:</span><strong>ISO 9001:2015 & Industry Aligned</strong></div>
                   </div>
 
@@ -176,6 +188,32 @@ export default function Certificate() {
             {/* Live Digital Certificate Display */}
             <div className="sample-cert-card">
               <div className="cert-frame">
+                {certData?.status === 'revoked' && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%) rotate(-25deg)',
+                      border: '6px solid #ff4757',
+                      color: '#ff4757',
+                      fontSize: '3.2rem',
+                      fontWeight: '900',
+                      letterSpacing: '8px',
+                      textTransform: 'uppercase',
+                      padding: '12px 36px',
+                      borderRadius: '12px',
+                      opacity: 0.9,
+                      pointerEvents: 'none',
+                      zIndex: 10,
+                      backgroundColor: 'rgba(20, 25, 40, 0.85)',
+                      boxShadow: '0 0 35px rgba(255, 71, 87, 0.5)',
+                      backdropFilter: 'blur(3px)',
+                    }}
+                  >
+                    REVOKED
+                  </div>
+                )}
                 <div className="cert-inner-border">
                   <div className="cert-top-header">
                     <div className="cert-seal"><i className="fa-solid fa-award"></i></div>
@@ -217,8 +255,10 @@ export default function Certificate() {
                   type="button"
                   className="btn btn-sm btn-cyan"
                   onClick={handlePrint}
+                  disabled={certData?.status === 'revoked'}
+                  title={certData?.status === 'revoked' ? 'Revoked credentials cannot be exported or printed' : 'Print / Save as PDF'}
                 >
-                  <i className="fa-solid fa-print"></i> Print / Save as PDF
+                  <i className="fa-solid fa-print"></i> {certData?.status === 'revoked' ? 'Credential Revoked (Void)' : 'Print / Save as PDF'}
                 </button>
                 <button
                   type="button"

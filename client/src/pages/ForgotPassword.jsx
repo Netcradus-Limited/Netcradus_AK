@@ -48,7 +48,7 @@ export default function ForgotPassword() {
               width: '56px',
               height: '56px',
               borderRadius: '50%',
-              background: 'rgba(0, 210, 255, 0.1)',
+              background: 'rgba(245, 158, 11, 0.1)',
               border: '1px solid var(--cyan-primary)',
               display: 'flex',
               alignItems: 'center',

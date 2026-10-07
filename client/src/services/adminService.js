@@ -23,6 +23,19 @@ export const adminService = {
   },
 
   /**
+   * Fetch complete financial & course analytics
+   */
+  async getAnalytics() {
+    const response = await fetch(`${API_BASE_URL}/admin/analytics`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    const result = await handleResponse(response);
+    return result.data;
+  },
+
+  /**
    * Fetch student accounts list
    */
   async getStudents(params = {}) {
@@ -441,5 +454,106 @@ export const adminService = {
     });
     return await handleResponse(response);
   },
-};
 
+  /**
+   * Fetch certificates list with pagination, search, status, and course filter
+   */
+  async getCertificates(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.status) query.append('status', params.status);
+    if (params.courseId) query.append('courseId', params.courseId);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+
+    const url = `${API_BASE_URL}/admin/certificates?${query.toString()}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Revoke an active certificate with a mandatory reason
+   */
+  async revokeCertificate(id, reason) {
+    const response = await fetch(`${API_BASE_URL}/admin/certificates/${id}/revoke`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ reason }),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Fetch categories list with optional search and pagination
+   */
+  async getCategories(params = {}) {
+    const query = new URLSearchParams();
+    if (params.search) query.append('search', params.search);
+    if (params.isActive !== undefined) query.append('isActive', params.isActive);
+    if (params.page) query.append('page', params.page);
+    if (params.limit) query.append('limit', params.limit);
+
+    const url = `${API_BASE_URL}/admin/categories?${query.toString()}`;
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Fetch single category by ID
+   */
+  async getCategory(id) {
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Create a new category
+   */
+  async createCategory(data) {
+    const response = await fetch(`${API_BASE_URL}/admin/categories`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Update category
+   */
+  async updateCategory(id, data) {
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(data),
+    });
+    return await handleResponse(response);
+  },
+
+  /**
+   * Delete category (will be safely rejected if courses are using it)
+   */
+  async deleteCategory(id) {
+    const response = await fetch(`${API_BASE_URL}/admin/categories/${id}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+    });
+    return await handleResponse(response);
+  },
+};

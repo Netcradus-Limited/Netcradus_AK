@@ -114,7 +114,7 @@ export default function QuizPlayer({
             width: '64px',
             height: '64px',
             borderRadius: '50%',
-            background: 'rgba(0, 210, 255, 0.1)',
+            background: 'rgba(245, 158, 11, 0.1)',
             border: '1px solid var(--cyan-primary)',
             display: 'flex',
             alignItems: 'center',
@@ -159,7 +159,7 @@ export default function QuizPlayer({
             <span
               className="badge"
               style={{
-                background: 'rgba(0, 210, 255, 0.15)',
+                background: 'rgba(245, 158, 11, 0.15)',
                 color: 'var(--cyan-primary)',
                 fontSize: '0.75rem',
                 border: '1px solid var(--border-glow)',
@@ -415,7 +415,7 @@ export default function QuizPlayer({
                     let optionColor = 'var(--text-main)';
 
                     if (isSelected) {
-                      optionBg = 'rgba(0, 210, 255, 0.12)';
+                      optionBg = 'rgba(245, 158, 11, 0.12)';
                       optionBorder = '1px solid var(--cyan-primary)';
                       optionColor = 'var(--white)';
                     }

@@ -16,8 +16,10 @@ export default function AdminSidebar({ mobileOpen, onCloseMobile }) {
     { label: 'Students', path: '/admin/students', icon: 'fa-solid fa-user-graduate' },
     { label: 'Instructors', path: '/admin/instructors', icon: 'fa-solid fa-chalkboard-user' },
     { label: 'Courses', path: '/admin/courses', icon: 'fa-solid fa-book-open' },
+    { label: 'Categories', path: '/admin/categories', icon: 'fa-solid fa-tags' },
     { label: 'Enrollments', path: '/admin/enrollments', icon: 'fa-solid fa-graduation-cap' },
     { label: 'Payments', path: '/admin/payments', icon: 'fa-solid fa-receipt' },
+    { label: 'Certificates', path: '/admin/certificates', icon: 'fa-solid fa-award' },
     { label: 'Inquiries', path: '/admin/inquiries', icon: 'fa-solid fa-envelope-open-text' },
   ];
 

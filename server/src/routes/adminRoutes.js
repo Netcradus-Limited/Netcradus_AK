@@ -3,13 +3,15 @@ const router = express.Router();
 const { protect, restrictTo } = require('../middleware/authMiddleware');
 const adminController = require('../controllers/adminController');
 const curriculumController = require('../controllers/curriculumController');
+const categoryController = require('../controllers/categoryController');
 
 // All endpoints in this router MUST require authentication and admin / super_admin role
 router.use(protect);
 router.use(restrictTo('admin', 'super_admin'));
 
-// Dashboard Overview
+// Dashboard Overview & Analytics
 router.get('/dashboard/stats', adminController.getDashboardStats);
+router.get('/analytics', adminController.getDashboardStats);
 // Legacy compatibility ping
 router.get('/dashboard-stats', adminController.getDashboardStats);
 
@@ -34,10 +36,18 @@ router.post('/courses/:courseId/modules', curriculumController.createModule);
 router.put('/modules/:moduleId', curriculumController.updateModule);
 router.delete('/modules/:moduleId', curriculumController.deleteModule);
 router.patch('/modules/:moduleId/reorder', curriculumController.reorderModule);
+router.get('/lectures/:lectureId', curriculumController.getAdminLecture);
 router.post('/modules/:moduleId/lectures', curriculumController.createLecture);
 router.put('/lectures/:lectureId', curriculumController.updateLecture);
 router.delete('/lectures/:lectureId', curriculumController.deleteLecture);
 router.patch('/lectures/:lectureId/reorder', curriculumController.reorderLecture);
+
+// Category Management (CRUD)
+router.get('/categories', categoryController.getAdminCategories);
+router.post('/categories', categoryController.createCategory);
+router.get('/categories/:id', categoryController.getCategory);
+router.put('/categories/:id', categoryController.updateCategory);
+router.delete('/categories/:id', categoryController.deleteCategory);
 
 // Enrollment Management
 router.get('/enrollments', adminController.getAdminEnrollments);
@@ -46,6 +56,10 @@ router.patch('/enrollments/:id/status', adminController.updateEnrollmentStatus);
 
 // Payment Ledger (Read-Only)
 router.get('/payments', adminController.getAdminPayments);
+
+// Certificate Management
+router.get('/certificates', adminController.getAdminCertificates);
+router.patch('/certificates/:id/revoke', adminController.revokeCertificate);
 
 // Inquiry / Lead Management
 router.get('/inquiries', adminController.getAdminInquiries);

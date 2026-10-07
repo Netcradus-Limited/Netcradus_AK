@@ -23,6 +23,8 @@ import AdminInstructors from './pages/admin/AdminInstructors';
 import AdminCourses from './pages/admin/AdminCourses';
 import AdminEnrollments from './pages/admin/AdminEnrollments';
 import AdminPayments from './pages/admin/AdminPayments';
+import AdminCertificates from './pages/admin/AdminCertificates';
+import AdminCategories from './pages/admin/AdminCategories';
 import AdminInquiries from './pages/admin/AdminInquiries';
 import CourseDetail from './pages/CourseDetail';
 import MyCourses from './pages/MyCourses';
@@ -179,6 +181,8 @@ export default function App() {
                 <Route path="courses/:courseId/assignments" element={<AdminAssignments />} />
                 <Route path="enrollments" element={<AdminEnrollments />} />
                 <Route path="payments" element={<AdminPayments />} />
+                <Route path="certificates" element={<AdminCertificates />} />
+                <Route path="categories" element={<AdminCategories />} />
                 <Route path="inquiries" element={<AdminInquiries />} />
                 <Route path="*" element={<Navigate to="/admin/dashboard" replace />} />
               </Route>

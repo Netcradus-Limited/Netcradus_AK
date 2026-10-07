@@ -80,7 +80,7 @@ export default function ResetPassword() {
               width: '56px',
               height: '56px',
               borderRadius: '50%',
-              background: 'rgba(0, 210, 255, 0.1)',
+              background: 'rgba(245, 158, 11, 0.1)',
               border: '1px solid var(--cyan-primary)',
               display: 'flex',
               alignItems: 'center',
@@ -123,7 +123,7 @@ export default function ResetPassword() {
               </div>
               <div style={{ fontSize: '0.82rem', marginTop: '4px' }}>
                 Need a new link?{' '}
-                <Link to="/forgot-password" style={{ color: '#00d2ff', textDecoration: 'underline' }}>
+                <Link to="/forgot-password" style={{ color: '#f59e0b', textDecoration: 'underline' }}>
                   Request another password reset
                 </Link>
               </div>

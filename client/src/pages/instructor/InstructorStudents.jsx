@@ -161,7 +161,7 @@ export default function InstructorStudents() {
                           width: '34px',
                           height: '34px',
                           borderRadius: '50%',
-                          background: 'rgba(0, 210, 255, 0.12)',
+                          background: 'rgba(245, 158, 11, 0.12)',
                           color: 'var(--cyan-primary)',
                           display: 'flex',
                           alignItems: 'center',
@@ -200,7 +200,7 @@ export default function InstructorStudents() {
                         fontSize: '0.75rem',
                         fontWeight: 600,
                         textTransform: 'uppercase',
-                        background: item.status === 'completed' ? 'rgba(46, 213, 115, 0.15)' : 'rgba(0, 210, 255, 0.15)',
+                        background: item.status === 'completed' ? 'rgba(46, 213, 115, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                         color: item.status === 'completed' ? '#2ed573' : 'var(--cyan-primary)',
                       }}
                     >

@@ -447,7 +447,7 @@ export default function AdminAssignments() {
                                 className="btn-admin-action"
                                 onClick={() => handleOpenSubmissions(assign)}
                                 title="View Submissions & Grade"
-                                style={{ background: 'rgba(0, 210, 255, 0.15)', color: 'var(--cyan-primary)' }}
+                                style={{ background: 'rgba(245, 158, 11, 0.15)', color: 'var(--cyan-primary)' }}
                               >
                                 <i className="fa-solid fa-award"></i> Review
                               </button>
@@ -485,7 +485,7 @@ export default function AdminAssignments() {
               className="admin-card"
               style={{
                 border: '1px solid var(--border-glow)',
-                boxShadow: '0 8px 30px rgba(0, 210, 255, 0.08)',
+                boxShadow: '0 8px 30px rgba(245, 158, 11, 0.08)',
                 marginBottom: '30px',
               }}
             >
@@ -647,7 +647,7 @@ export default function AdminAssignments() {
                                   onClick={() => handleOpenGradingModal(sub)}
                                   className="btn-admin-action"
                                   style={{
-                                    background: isGraded ? 'rgba(39, 201, 63, 0.15)' : 'rgba(0, 210, 255, 0.15)',
+                                    background: isGraded ? 'rgba(39, 201, 63, 0.15)' : 'rgba(245, 158, 11, 0.15)',
                                     color: isGraded ? '#27c93f' : 'var(--cyan-primary)',
                                     fontWeight: 600,
                                   }}

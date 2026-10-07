@@ -77,7 +77,7 @@ export default function InstructorDashboard() {
       {/* Metric Cards Grid */}
       <div className="admin-stats-grid">
         <div className="admin-stat-card">
-          <div className="admin-stat-icon courses" style={{ background: 'rgba(0, 210, 255, 0.12)', color: 'var(--cyan-primary)' }}>
+          <div className="admin-stat-icon courses" style={{ background: 'rgba(245, 158, 11, 0.12)', color: 'var(--cyan-primary)' }}>
             <i className="fa-solid fa-book-open"></i>
           </div>
           <div className="admin-stat-info">

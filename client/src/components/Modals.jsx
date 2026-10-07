@@ -295,7 +295,7 @@ export default function Modals() {
                 </p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', background: 'rgba(0,210,255,0.05)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glow)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px', background: 'rgba(245, 158, 11,0.05)', padding: '16px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-glow)' }}>
                 <div>
                   <h5 style={{ color: 'var(--text-main)', marginBottom: '4px' }}>Global Certification</h5>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>{selectedCourse.cert}</p>
@@ -513,7 +513,7 @@ export default function Modals() {
             <h3>Free Demo Workshops</h3>
             <p>Secure a seat in our upcoming live cybersecurity sandbox workshop</p>
           </div>
-          <div style={{ background: 'rgba(0, 210, 255, 0.05)', padding: '15px', borderRadius: '8px', border: '1px dashed var(--border-glow)', marginBottom: '20px', textAlign: 'center' }}>
+          <div style={{ background: 'rgba(245, 158, 11, 0.05)', padding: '15px', borderRadius: '8px', border: '1px dashed var(--border-glow)', marginBottom: '20px', textAlign: 'center' }}>
             <h4 style={{ color: 'var(--white)', marginBottom: '6px' }}>🔴 Next Session: Penetration Testing Live Hack</h4>
             <p style={{ color: 'var(--cyan-primary)', fontSize: '0.85rem', fontWeight: 600 }}>Saturday at 6:00 PM | Duration: 2 Hours</p>
           </div>
