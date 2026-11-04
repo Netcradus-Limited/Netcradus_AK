@@ -73,7 +73,7 @@ export default function Contact() {
                   <div className="info-icon"><i className="fa-solid fa-phone"></i></div>
                   <div>
                     <h5>Call Us Toll-Free</h5>
-                    <p>1800 121 008800 (Mon - Sat, 9 AM - 8 PM)</p>
+                    <p>7290909574 (Mon - Sat, 9 AM - 8 PM)</p>
                   </div>
                 </div>
 
@@ -81,7 +81,7 @@ export default function Contact() {
                   <div className="info-icon"><i className="fa-regular fa-envelope"></i></div>
                   <div>
                     <h5>Email Support</h5>
-                    <p>academia@netcradus.com</p>
+                    <p>academy@netcradus.com</p>
                   </div>
                 </div>
 
@@ -89,7 +89,8 @@ export default function Contact() {
                   <div className="info-icon"><i className="fa-solid fa-location-dot"></i></div>
                   <div>
                     <h5>Headquarters Location</h5>
-                    <p>Netcradus Innovation Park, Tech Zone 4, IT Corridor, India</p>
+                    <p>G-260, Sector 63
+Noida, UP, India, India</p>
                   </div>
                 </div>
               </div>
