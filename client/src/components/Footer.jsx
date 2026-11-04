@@ -193,7 +193,7 @@ export default function Footer() {
                     <i className="fa-solid fa-phone"></i>
                   </div>
                   <div className="contact-details">
-                    <a href="tel:1800121008800" className="contact-value">1800 121 008800</a>
+                    <a href="tel:7290909574" className="contact-value">7290909574</a>
                     <span className="contact-subtext">Mon - Sat, 9:00 AM - 6:00 PM</span>
                   </div>
                 </div>
@@ -203,7 +203,7 @@ export default function Footer() {
                     <i className="fa-regular fa-envelope"></i>
                   </div>
                   <div className="contact-details">
-                    <a href="mailto:academia@netcradus.com" className="contact-value">academia@netcradus.com</a>
+                    <a href="mailto:academy@netcradus.com" className="contact-value">academy@netcradus.com</a>
                     <span className="contact-subtext">We reply within 24 hours</span>
                   </div>
                 </div>
@@ -213,7 +213,8 @@ export default function Footer() {
                     <i className="fa-solid fa-location-dot"></i>
                   </div>
                   <div className="contact-details">
-                    <span className="contact-value">Bangalore, India</span>
+                    <span className="contact-value">G-260, Sector 63
+Noida, UP, India</span>
                     <span className="contact-subtext">Our Learning Hub</span>
                   </div>
                 </div>
