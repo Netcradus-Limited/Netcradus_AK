@@ -7,11 +7,19 @@ import PublicOnlyRoute from './components/PublicOnlyRoute';
 import { AuthProvider } from './context/AuthContext';
 import Home from './pages/Home';
 import About from './pages/About';
-import Courses from './pages/Courses';
-import Dashboard from './pages/Dashboard';
+import Programmes from './pages/Programmes';
+import ProgrammeDetail from './pages/ProgrammeDetail';
+import LearningJourney from './pages/LearningJourney';
+import Careers from './pages/Careers';
+import Institutions from './pages/Institutions';
+import Contact from './pages/Contact';
+import Blog from './pages/Blog';
+import BlogPost from './pages/BlogPost';
 import Certificate from './pages/Certificate';
 import Projects from './pages/Projects';
-import Contact from './pages/Contact';
+import Dashboard from './pages/Dashboard';
+import MyCourses from './pages/MyCourses';
+import Learn from './pages/Learn';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
@@ -21,16 +29,13 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminStudents from './pages/admin/AdminStudents';
 import AdminInstructors from './pages/admin/AdminInstructors';
 import AdminCourses from './pages/admin/AdminCourses';
+import AdminCurriculum from './pages/admin/AdminCurriculum';
+import AdminAssignments from './pages/admin/AdminAssignments';
 import AdminEnrollments from './pages/admin/AdminEnrollments';
 import AdminPayments from './pages/admin/AdminPayments';
 import AdminCertificates from './pages/admin/AdminCertificates';
 import AdminCategories from './pages/admin/AdminCategories';
 import AdminInquiries from './pages/admin/AdminInquiries';
-import CourseDetail from './pages/CourseDetail';
-import MyCourses from './pages/MyCourses';
-import Learn from './pages/Learn';
-import AdminCurriculum from './pages/admin/AdminCurriculum';
-import AdminAssignments from './pages/admin/AdminAssignments';
 import InstructorLayout from './components/instructor/InstructorLayout';
 import InstructorDashboard from './pages/instructor/InstructorDashboard';
 import InstructorCourses from './pages/instructor/InstructorCourses';
@@ -42,6 +47,7 @@ import InstructorSubmissions from './pages/instructor/InstructorSubmissions';
 import InstructorStudents from './pages/instructor/InstructorStudents';
 import InstructorProfile from './pages/instructor/InstructorProfile';
 import { academyService } from './services/academyService';
+import { PROGRAMMES } from './data/programmesData';
 
 const AppContext = createContext();
 
@@ -50,8 +56,8 @@ export const useApp = () => useContext(AppContext);
 export default function App() {
   const [activeModal, setActiveModal] = useState(null);
   const [activeDrawer, setActiveDrawer] = useState(null);
-  const [enrollCourseName, setEnrollCourseName] = useState('');
-  const [selectedCourseKey, setSelectedCourseKey] = useState('cyber');
+  const [enrollCourseName, setEnrollCourseName] = useState(PROGRAMMES[0].title);
+  const [selectedCourseKey, setSelectedCourseKey] = useState(PROGRAMMES[0].slug);
   const [toast, setToast] = useState({ show: false, message: '' });
 
   // Dynamic API Courses state
@@ -66,8 +72,9 @@ export default function App() {
       const data = await academyService.getCourses('all');
       setCourses(data);
     } catch (err) {
-      console.error('[App] Failed to fetch courses catalog from API:', err);
-      setCoursesError(err.message || 'Unable to load courses right now. Please try again.');
+      console.warn('[App] Falling back to official brochure catalog:', err.message);
+      // Graceful fallback to brochure data so the UI is always loaded
+      setCourses(PROGRAMMES);
     } finally {
       setLoadingCourses(false);
     }
@@ -99,7 +106,7 @@ export default function App() {
   };
 
   const openEnrollModalFor = (courseTitle) => {
-    setEnrollCourseName(courseTitle || '');
+    setEnrollCourseName(courseTitle || PROGRAMMES[0].title);
     setActiveModal('enroll');
   };
 
@@ -119,7 +126,7 @@ export default function App() {
     event.preventDefault();
     setActiveModal(null);
     setActiveDrawer(null);
-    showToast(`Thank you! Your ${formTitle} has been received. Our team will contact you within 2 hours.`);
+    showToast(`Thank you! Your ${formTitle} has been received. Our team will contact you shortly.`);
     if (event.target) {
       event.target.reset();
     }
@@ -127,39 +134,49 @@ export default function App() {
 
   return (
     <AuthProvider>
-      <AppContext.Provider value={{
-        activeModal,
-        activeDrawer,
-        openModal,
-        closeModal,
-        openDrawer,
-        closeDrawer,
-        enrollCourseName,
-        setEnrollCourseName,
-        openEnrollModalFor,
-        selectedCourseKey,
-        setSelectedCourseKey,
-        openCourseDetails,
-        toast,
-        showToast,
-        handleFormSubmit,
-        courses,
-        loadingCourses,
-        coursesError,
-        reloadCourses: loadCourses,
-      }}>
+      <AppContext.Provider
+        value={{
+          activeModal,
+          activeDrawer,
+          openModal,
+          closeModal,
+          openDrawer,
+          closeDrawer,
+          enrollCourseName,
+          setEnrollCourseName,
+          openEnrollModalFor,
+          selectedCourseKey,
+          setSelectedCourseKey,
+          openCourseDetails,
+          toast,
+          showToast,
+          handleFormSubmit,
+          courses,
+          loadingCourses,
+          coursesError,
+          reloadCourses: loadCourses,
+        }}
+      >
         <BrowserRouter>
           <Routes>
             {/* Main Website Routes */}
             <Route path="/" element={<Layout />}>
-              {/* Public Routes (Accessible without authentication) */}
+              {/* Public Official Brochure Routes */}
               <Route index element={<Home />} />
               <Route path="about" element={<About />} />
-              <Route path="courses" element={<Courses />} />
-              <Route path="courses/:slug" element={<CourseDetail />} />
-              <Route path="projects" element={<Projects />} />
+              <Route path="programmes" element={<Programmes />} />
+              <Route path="programmes/:slug" element={<ProgrammeDetail />} />
+              <Route path="courses" element={<Programmes />} />
+              <Route path="courses/:slug" element={<ProgrammeDetail />} />
+              <Route path="learning-journey" element={<LearningJourney />} />
+              <Route path="careers" element={<Careers />} />
+              <Route path="career-opportunities" element={<Careers />} />
+              <Route path="institutions" element={<Institutions />} />
               <Route path="contact" element={<Contact />} />
+              <Route path="blog" element={<Blog />} />
+              <Route path="blog/:slug" element={<BlogPost />} />
               <Route path="certificate" element={<Certificate />} />
+              <Route path="projects" element={<Projects />} />
 
               {/* Protected Student Routes (Authenticated Students ONLY) */}
               <Route element={<ProtectedRoute allowedRoles={['student']} />}>
@@ -225,4 +242,3 @@ export default function App() {
     </AuthProvider>
   );
 }
-

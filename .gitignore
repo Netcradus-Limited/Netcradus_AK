@@ -22,6 +22,10 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
+# Scratch and test output
+scratch/
+*.png
+
 # IDE configurations
 .vscode/
 .idea/

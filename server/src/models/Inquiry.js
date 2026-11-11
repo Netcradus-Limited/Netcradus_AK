@@ -24,6 +24,16 @@ const inquirySchema = new mongoose.Schema(
       required: [true, 'Course interest is required'],
       trim: true,
     },
+    qualification: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+    institutionName: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     message: {
       type: String,
       default: '',
@@ -36,7 +46,16 @@ const inquirySchema = new mongoose.Schema(
     },
     source: {
       type: String,
-      enum: ['contact_page', 'quick_enquiry', 'callback_request', 'demo_request', 'workshop_registration'],
+      enum: [
+        'contact_page',
+        'quick_enquiry',
+        'callback_request',
+        'demo_request',
+        'workshop_registration',
+        'admissions_enquiry',
+        'institution_enquiry',
+        'programme_page'
+      ],
       required: [true, 'Inquiry source is required'],
       index: true,
     },

@@ -18,14 +18,16 @@ const createInquiry = asyncHandler(async (req, res, next) => {
     });
   }
 
-  const { fullName, email, phone, interestedCourse, message, source } = value;
+  const { fullName, email, phone, interestedCourse, qualification, institutionName, message, source } = value;
 
   // 2. Create Inquiry record
   const inquiry = await Inquiry.create({
     fullName: fullName.trim(),
-    email: email.toLowerCase().trim(),
+    email: email ? email.toLowerCase().trim() : '',
     phone: phone.trim(),
     interestedCourse: interestedCourse.trim(),
+    qualification: qualification ? qualification.trim() : '',
+    institutionName: institutionName ? institutionName.trim() : '',
     message: message ? message.trim() : '',
     source: source || 'quick_enquiry',
     status: 'new',
@@ -33,7 +35,7 @@ const createInquiry = asyncHandler(async (req, res, next) => {
 
   res.status(201).json({
     success: true,
-    message: 'Thank you! Your inquiry has been received. Our academic team will contact you within 2 hours.',
+    message: 'Thank you! Your enquiry has been received. Our admissions team will contact you shortly.',
     data: inquiry,
   });
 });

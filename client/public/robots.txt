@@ -1,0 +1,48 @@
+# Netcradus Academy - Robots.txt
+# Official Website: https://academy.netcradus.com/
+# Sitemap: https://academy.netcradus.com/sitemap.xml
+
+User-agent: *
+Allow: /
+Allow: /programmes/
+Allow: /learning-journey
+Allow: /careers
+Allow: /institutions
+Allow: /about
+Allow: /contact
+Allow: /blog/
+Disallow: /admin/
+Disallow: /instructor/
+Disallow: /dashboard
+Disallow: /my-courses
+Disallow: /learn/
+Disallow: /api/
+
+# Explicit permissions for Search Engine & AI Citations
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+# Host & Sitemap Declaration
+Host: https://academy.netcradus.com
+Sitemap: https://academy.netcradus.com/sitemap.xml
